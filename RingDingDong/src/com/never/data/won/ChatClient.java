@@ -26,15 +26,15 @@ public class ChatClient {
 	JFrame f;
 	JTextField tfIP, tfPort, tfName, tfText;
 	JTextArea taLog;
-	JButton btn1, btn2, btnName;
+	JButton btn1, btn2, btnName, btnServerLog, btnImgBg;
 	JList<String> list;
 	DefaultListModel<String> model;
-	
+
 	Socket socket;
 	DataInputStream dis;
 	DataOutputStream dos;
-	
-	
+
+
 
 	ActionListener listener = new ActionListener(){
 		@Override
@@ -60,33 +60,33 @@ public class ChatClient {
 			model.setElementAt(newName, idx);
 		}
 	}
-	
+
 	//exited User remove from list
 	public void deleteUser(String name){
 		model.removeElement(name);
 	}
-	
+
 	//Add user list
 	public void addUser(String name){
 		model.addElement(name);
 	}
-	
+
 	//user list
 	public void showUserList(String[] nameList){
 		for(String name : nameList){
 			model.addElement(name);
 		}
 	}
-	
+
 	void changeNickName(){
 		try{
 			if(!tfName.getText().equals(null)){		
-				
+
 				String text = tfName.getText();	
 				dos.writeChar('N');
 				dos.writeUTF(text);
 				dos.flush();
-				
+
 				tfName.setText("");				
 			}
 		}catch(IOException e){
@@ -94,17 +94,17 @@ public class ChatClient {
 			tfName.setText("");
 		}
 	}
-	
-	
+
+
 	void sendMessage(){
 		try{
 			if(!tfText.getText().equals(null)){		
-				
+
 				String text = tfText.getText();	
 				dos.writeChar('M');
 				dos.writeUTF(text);
 				dos.flush();
-				
+
 				tfText.setText("");				
 			}
 		}catch(IOException e){
@@ -114,14 +114,16 @@ public class ChatClient {
 	}
 
 	void exitClient(){
-		try{
-			dos.writeChar('X');
-			dos.flush();
-			if(dos != null)	dos.close();	
-			if(dis != null)	dis.close();
-			if(socket != null)	socket.close();
-		}catch(IOException e){
-			
+		if(dos != null){
+			try{
+				dos.writeChar('X');
+				dos.flush();
+				if(dos != null)	dos.close();	
+				if(dis != null)	dis.close();
+				if(socket != null)	socket.close();
+			}catch(IOException e){
+
+			}
 		}
 	}
 
@@ -139,7 +141,7 @@ public class ChatClient {
 			commenceClient("192.168.0.4",12345);			
 		}
 	}
-	
+
 	String nickName(){
 		String nickName = "";
 		nickName = tfName.getText();
@@ -175,7 +177,7 @@ public class ChatClient {
 	void addLog(String msg){
 		taLog.append(msg+"\n");
 	}
-	
+
 	void setChatWindowName(String msg){
 		f.setTitle(String.format("Chatting Client[ %s ]", msg));
 	}
@@ -191,16 +193,18 @@ public class ChatClient {
 		f.setBounds(700,100,500,500);
 		JPanel p1 = new JPanel(new BorderLayout());		// 아이피주소
 		JPanel p2 = new JPanel(new BorderLayout());		// 포트번호
-		
+
 		JPanel p3 = new JPanel(new GridLayout(1,2));	// 아이비+포트
-			
+
 		JPanel p4 = new JPanel(new BorderLayout());		//위쪽 마무리		
 		JPanel p5 = new JPanel(new BorderLayout());	
-		
-		JPanel p6 = new JPanel(new BorderLayout());	//대화명
-		JPanel p7 = new JPanel(new GridLayout(2,1));	//대화명변경 버튼 + 대화명	
+
+		JPanel p6 = new JPanel(new BorderLayout());		//대화명 변경창
+		JPanel p71 = new JPanel(new GridLayout(1,2));	//버튼 2개(서버로그, 이미지 배경 변경)
+		JPanel p7 = new JPanel(new GridLayout(3,1));	//대화명변경 버튼 + 대화명	변경창 + 버튼2개		
 		JPanel p8 = new JPanel(new BorderLayout());
-		
+
+
 
 		p1.add("West",new JLabel("  IP  "));
 		p1.add("Center",tfIP = new JTextField(15));
@@ -222,15 +226,28 @@ public class ChatClient {
 		p5.add("East",btn2 = new JButton("Send"));
 		btn2.setEnabled(false);
 		btn2.setActionCommand("B");
-		btn2.addActionListener(listener);
-		
+		btn2.addActionListener(listener);		
+
 		p6.add("West", new JLabel(" NickName "));
 		p6.add("Center",tfName = new JTextField(10));
+
+		p71.add(btnServerLog = new JButton("Get Log"));
+		btnServerLog.setActionCommand("0");
+		btnServerLog.addActionListener(listener);
+		p71.add(btnImgBg = new JButton("Image bg"));
+		btnImgBg.setActionCommand("i");
+		btnImgBg.addActionListener(listener);
+
+		p7.add(p71);
+
 		p7.add(btnName = new JButton("Name Change"));
 		btnName.setActionCommand("C");
 		btnName.addActionListener(listener);
+
 		p7.add( p6);
-		
+
+
+
 		p8.add("South", p7);
 		model = new DefaultListModel<String>();
 		list = new JList<String>();
@@ -247,7 +264,7 @@ public class ChatClient {
 		f.add("South", p5);
 
 		f.setVisible(true);
-		
+
 		f.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
 				exitClient();
