@@ -1,4 +1,4 @@
-package com.never.data.jung.chat.server;
+package com.never.share;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -21,7 +21,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class ChatServer {
+public class ServerGUI {
 
 	JFrame f;
 	JPanel mainPanel, nPanel, cPanel, sPanel, sPanelCenter, sPanelSouth;
@@ -48,7 +48,7 @@ public class ChatServer {
 	};
 	
 	// 생성자
-	public ChatServer() {
+	public ServerGUI() {
 		initGUI();
 	}
 	// server Log에 메시지를 띄웁니다.
@@ -148,7 +148,7 @@ public class ChatServer {
 	
 	public static void main(String[] args) {
 
-		new ChatServer();
+		new ServerGUI();
 		
 	}
 
