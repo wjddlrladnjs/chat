@@ -2,18 +2,18 @@ package com.never.project.client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,21 +26,24 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 public class ChatClient {
-
-	JFrame f;
-	JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
+	static int num = 0;
+	
+	private JFrame f;
+	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
 	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
 	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
 	sPanel;
-	JTextField tfIP, tfPort, tfNickname, tfMessage;
+	private JTextField tfIP, tfPort, tfNickname, tfMessage;
 	
-	JTextArea taClientLog;
+	private JTextArea taClientLog;
 	// JEditorPane epChatLog;
-	JScrollPane spUserList, spClientLog;
-	JList<String> userList;
-	JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
+	private JScrollPane spUserList, spClientLog;
+	private JList<String> userList;
+	private JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
 
-	Socket s;
+	private Socket s;
+	private DataInputStream dis;
+	private DataOutputStream dos;
 	
 	String taImgPath;
 	Image img;
@@ -52,11 +55,16 @@ public class ChatClient {
 			String cmd = e.getActionCommand();
 			
 			switch( cmd ) {
+			
 			case "connection":
 				connectServer();
 				break;
-				
-			default:
+			case "disconnection":
+				disconnectServer();
+				break;
+			case "send" :
+				sendMessage();
+				tfMessage.grabFocus();
 				break;
 			}
 		}
@@ -65,16 +73,46 @@ public class ChatClient {
 	public ChatClient() {
 		initGUI();
 	}
+	// 서버와 접솝을 종료하는 메서드.
+	private void disconnectServer() {
+		
+		doExitEvent(5);
+		appendClientLog(">> 접속을 종료하였습니다. <<");
+		changeButton(false);
+		
+	}
+	
+	// 메시지 전송을 위한 메서드.
+	private void sendMessage() {
+
+		String msg = tfMessage.getText();
+		tfMessage.setText("");
+		
+		if( msg.length() == 0 ) {
+			return;
+		}
+		try {
+			dos.writeChar('M');
+			dos.flush();
+			dos.writeUTF(msg);
+			dos.flush();
+		} catch( IOException e ) {
+			appendClientLog("클라 메시지 전송 애러 : " + e.toString());
+		}
+		
+	}
 	// client log 메시지 띄우는 메서드.
 	public void appendClientLog( String msg ) {
+		
 		int length = taClientLog.getText().length();
 		taClientLog.append(msg + "\n");
 		// 자동 스크롤링
 		taClientLog.setCaretPosition( length );
+		
 	}
 	// 접속 버튼 눌렀을 때 해당 정보로 서버에 접속시도.
 	private void connectServer() {
-		
+	
 		// 입력된 포트 정보를 가져온다.
 		int port = 12345;
 		String inputIP = tfIP.getText().trim();
@@ -85,19 +123,10 @@ public class ChatClient {
 			try {
 				port = Integer.parseInt(inputPort);
 				if( port < 1 || port > 65535) {
-					throw new NumberFormatException();
+					throw new NumberFormatException("");
 				}
-				
-				s = new Socket(inputIP, port);
-			} catch( IOException e ) {
-				appendClientLog("소켓 생성에 실패했습니다." + e.toString());
-				tfIP.selectAll();
-				tfPort.selectAll();
-				tfIP.grabFocus();
-				
-				return;
 			} catch( NumberFormatException e ) {
-				appendClientLog("잘못된 입력입니다.");
+				appendClientLog("잘못된 입력입니다." + e.toString());
 				tfIP.selectAll();
 				tfPort.selectAll();
 				tfIP.grabFocus();
@@ -105,18 +134,100 @@ public class ChatClient {
 				return;
 			} 
 		} // if end.
-		appendClientLog("소켓 연결 성공!");
+		// IP와 Port가 준비되었으니 연결을 준비한다.
+		s = null;
+		try {
+			s = new Socket(inputIP, port);
+			appendClientLog("소켓 연결 완료");
+			
+			// 소켓이 연결되었으면, I/O 준비를 하자.
+			dis = new DataInputStream(s.getInputStream());
+			dos = new DataOutputStream(s.getOutputStream());
+			appendClientLog("I/O 연결 완료");
+			// 여기까지 진행되면 서버와 통신이 가능하다.
+			// 버튼 상태를 변경한다.
+			changeButton(true);
+			
+			// 보내는 것은 이 객채로 가능 하지만,
+			// 받는 작업은 언제 올지 모르기 때문에 무한 반복으로 기다려야 한다.
+			// 이럴 때 쓰라고 쓰래드를 만들어서 쓴다.
+			 new Thread(new ClientReadThread(this)).start();;
+			
+		} catch( IOException e ) {
+			appendClientLog("클라 I/O 애러" + e.toString());
+		}
+		
+	}
+	// 서버와 연결되었을 때 버튼의 상태 변경 메서드.
+	public void changeButton( boolean state ) {
+		
+		btnSend.setEnabled(state);
+		btnNickname.setEnabled(state);
+		btnFuntion1.setEnabled(state);
+		btnFuntion2.setEnabled(state);
+		btnFuntion3.setEnabled(state);
+		btnFuntion4.setEnabled(state);
+
+		// 현재 상태에 따라 분기.
+		if( state ) {
+			btnConnect.setText("끊기");
+			btnConnect.setBackground(Color.RED);
+			btnConnect.setActionCommand("disconnection");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfMessage.grabFocus();
+		} else {
+			btnConnect.setText("접속");
+			btnConnect.setBackground(Color.GREEN);
+			btnConnect.setActionCommand("connection");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfIP.grabFocus();
+		}
 	}
 	
-	
+	// 클라 종료시 호출된 메서드.
+	public void doExitEvent(int state) {
+		
+		try {
+			// 서버에게도 클라가 종료되었음을 알림.
+			if( dos != null ) {
+				dos.writeChar('X');
+				dos.flush();
+			}
+		} catch( IOException e ) {
+			appendClientLog("클라 종료 애러" + e.toString());
+		} finally {
+			if( s != null ) {
+				try {s.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+			if( dis != null ) {
+				try {dis.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+			if( dos != null ) {
+				try {dos.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+		}
+
+		// 종료인지 접속 종료인지 판단.
+		if( state == 0 ) {
+			// X 버튼이면 다 닫고 종료.
+			System.exit(0);
+		}
+	}
 	private void initGUI() {
 
 		f = new JFrame("Chatting Client");
 		f.setBounds(0, 600, 500, 400);
-		f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		// 클라이언트 종료.
 		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {System.exit(0);}
+			public void windowClosing(WindowEvent e) {
+				// 클라 종료 메서드 호출. 인자 0은 종료.
+				doExitEvent(0);
+			;}
 		});
 
 		// main
@@ -133,6 +244,8 @@ public class ChatClient {
 		btnConnect = new JButton("접속");
 		btnConnect.addActionListener(listener);
 		btnConnect.setActionCommand("connection");
+		btnConnect.setFocusable(false);
+		btnConnect.setBackground(Color.GREEN);
 		nPanel.add(btnConnect, "East");
 		nPanel.add(nPanelCenter, "Center");
 		nPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
@@ -149,7 +262,6 @@ public class ChatClient {
 		tfPort = new JTextField("12345", 10);
 		nPanelCenterRight.add(tfPort, "Center");
 		nPanelCenter.add(nPanelCenterRight);
-
 		mainPanel.add(nPanel, "North");
 
 		// main.center
@@ -169,24 +281,21 @@ public class ChatClient {
 		cPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createLineBorder(Color.BLACK),
 				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
-		
 
-		taImgPath = "./src/com/never/data/jung/chat/file/a.jpg";
 		taClientLog = new JTextArea();
+		taClientLog.setEditable(false);
 		spClientLog = new JScrollPane(taClientLog);
-		// taChatLog = createTextArea(taImgPath);
-		// editer 실험중
-		// epChatLog = new JEditorPane();
-		// spChatLog = new JScrollPane(epChatLog);
-		// 가로 스크롤 나오지 않게 함.
 		spClientLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		cPanelCenter.add(spClientLog, "Center");
 		cPanelCenter.add(cPanelCenterSouth, "South");
 		tfMessage = new JTextField();
+		tfMessage.setActionCommand("send");
+		tfMessage.addActionListener(listener);
 		cPanelCenterSouth.add(tfMessage, "Center");
 		btnSend = new JButton("send");
 		btnSend.addActionListener(listener);
 		btnSend.setActionCommand("send");
+		btnSend.setEnabled(false);
 		cPanelCenterSouth.add(btnSend, "East");
 
 		// main.center.east
@@ -224,10 +333,15 @@ public class ChatClient {
 		btnFuntion2.setActionCommand("F2");
 		btnFuntion3.setActionCommand("F3");
 		btnFuntion4.setActionCommand("F4");
+		btnFuntion1.setEnabled(false);
+		btnFuntion2.setEnabled(false);
+		btnFuntion3.setEnabled(false);
+		btnFuntion4.setEnabled(false);
 		cPanelEastSouth.add(cPanelEastSouthSouth, "South");
 		btnNickname = new JButton("nick");
 		btnNickname.addActionListener(listener);
 		btnNickname.setActionCommand("nick");
+		btnNickname.setEnabled(false);
 		cPanelEastSouthSouth.add(btnNickname, "East");
 		tfNickname = new JTextField(5);
 		cPanelEastSouthSouth.add(tfNickname, "Center");
@@ -235,33 +349,257 @@ public class ChatClient {
 		// main.south
 		// 뭔가 붙여서 추가하면 좋겠음.
 		// 지금은 빈 공간임.
-		//		sPanel = new JPanel(new BorderLayout());
-		//		mainPanel.add(sPanel, "South");
-		//		JLabel bLabel = new JLabel("이미지를 띄어 볼까?");
-		//		bLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
-		//		sPanel.add(bLabel);
+		// sPanel = new JPanel(new BorderLayout());
+		// mainPanel.add(sPanel, "South");
+		// JLabel bLabel = new JLabel("이미지를 띄어 볼까?");
+		// bLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// sPanel.add(bLabel);
 
 		f.setVisible(true);
 
 	}
 	
-	// 이미지 변경을  실험중.
-//	private JTextArea createTextArea(String taImgPath) {
-//		img = new ImageIcon(taImgPath).getImage();
-//		taChatLog = new JTextArea(){
-//			{ setOpaque( false ) ; }
-//			public void paintComponent(Graphics g){
-//				g.drawImage(img,0,0,null);
-//				super.paintComponent(g);
-//			}
-//		};
-//		return taChatLog;
-//	}
-//
 	public static void main(String[] args) {
 
 		new ChatClient();
 
 	}
+	
+	// getter and setter
+	public JFrame getF() {
+		return f;
+	}
+	public void setF(JFrame f) {
+		this.f = f;
+	}
+	public JPanel getMainPanel() {
+		return mainPanel;
+	}
+	public void setMainPanel(JPanel mainPanel) {
+		this.mainPanel = mainPanel;
+	}
+	public JPanel getnPanel() {
+		return nPanel;
+	}
+	public void setnPanel(JPanel nPanel) {
+		this.nPanel = nPanel;
+	}
+	public JPanel getnPanelCenter() {
+		return nPanelCenter;
+	}
+	public void setnPanelCenter(JPanel nPanelCenter) {
+		this.nPanelCenter = nPanelCenter;
+	}
+	public JPanel getnPanelCenterLeft() {
+		return nPanelCenterLeft;
+	}
+	public void setnPanelCenterLeft(JPanel nPanelCenterLeft) {
+		this.nPanelCenterLeft = nPanelCenterLeft;
+	}
+	public JPanel getnPanelCenterRight() {
+		return nPanelCenterRight;
+	}
+	public void setnPanelCenterRight(JPanel nPanelCenterRight) {
+		this.nPanelCenterRight = nPanelCenterRight;
+	}
+	public JPanel getcPanel() {
+		return cPanel;
+	}
+	public void setcPanel(JPanel cPanel) {
+		this.cPanel = cPanel;
+	}
+	public JPanel getcPanelCenter() {
+		return cPanelCenter;
+	}
+	public void setcPanelCenter(JPanel cPanelCenter) {
+		this.cPanelCenter = cPanelCenter;
+	}
+	public JPanel getcPanelCenterSouth() {
+		return cPanelCenterSouth;
+	}
+	public void setcPanelCenterSouth(JPanel cPanelCenterSouth) {
+		this.cPanelCenterSouth = cPanelCenterSouth;
+	}
+	public JPanel getcPanelSouth() {
+		return cPanelSouth;
+	}
+	public void setcPanelSouth(JPanel cPanelSouth) {
+		this.cPanelSouth = cPanelSouth;
+	}
+	public JPanel getcPanelEast() {
+		return cPanelEast;
+	}
+	public void setcPanelEast(JPanel cPanelEast) {
+		this.cPanelEast = cPanelEast;
+	}
+	public JPanel getcPanelEastCenter() {
+		return cPanelEastCenter;
+	}
+	public void setcPanelEastCenter(JPanel cPanelEastCenter) {
+		this.cPanelEastCenter = cPanelEastCenter;
+	}
+	public JPanel getcPanelEastSouth() {
+		return cPanelEastSouth;
+	}
+	public void setcPanelEastSouth(JPanel cPanelEastSouth) {
+		this.cPanelEastSouth = cPanelEastSouth;
+	}
+	public JPanel getcPanelEastSouthNorth() {
+		return cPanelEastSouthNorth;
+	}
+	public void setcPanelEastSouthNorth(JPanel cPanelEastSouthNorth) {
+		this.cPanelEastSouthNorth = cPanelEastSouthNorth;
+	}
+	public JPanel getcPanelEastSouthCenter() {
+		return cPanelEastSouthCenter;
+	}
+	public void setcPanelEastSouthCenter(JPanel cPanelEastSouthCenter) {
+		this.cPanelEastSouthCenter = cPanelEastSouthCenter;
+	}
+	public JPanel getcPanelEastSouthSouth() {
+		return cPanelEastSouthSouth;
+	}
+	public void setcPanelEastSouthSouth(JPanel cPanelEastSouthSouth) {
+		this.cPanelEastSouthSouth = cPanelEastSouthSouth;
+	}
+	public JPanel getsPanel() {
+		return sPanel;
+	}
+	public void setsPanel(JPanel sPanel) {
+		this.sPanel = sPanel;
+	}
+	public JTextField getTfIP() {
+		return tfIP;
+	}
+	public void setTfIP(JTextField tfIP) {
+		this.tfIP = tfIP;
+	}
+	public JTextField getTfPort() {
+		return tfPort;
+	}
+	public void setTfPort(JTextField tfPort) {
+		this.tfPort = tfPort;
+	}
+	public JTextField getTfNickname() {
+		return tfNickname;
+	}
+	public void setTfNickname(JTextField tfNickname) {
+		this.tfNickname = tfNickname;
+	}
+	public JTextField getTfMessage() {
+		return tfMessage;
+	}
+	public void setTfMessage(JTextField tfMessage) {
+		this.tfMessage = tfMessage;
+	}
+	public JTextArea getTaClientLog() {
+		return taClientLog;
+	}
+	public void setTaClientLog(JTextArea taClientLog) {
+		this.taClientLog = taClientLog;
+	}
+	public JScrollPane getSpUserList() {
+		return spUserList;
+	}
+	public void setSpUserList(JScrollPane spUserList) {
+		this.spUserList = spUserList;
+	}
+	public JScrollPane getSpClientLog() {
+		return spClientLog;
+	}
+	public void setSpClientLog(JScrollPane spClientLog) {
+		this.spClientLog = spClientLog;
+	}
+	public JList<String> getUserList() {
+		return userList;
+	}
+	public void setUserList(JList<String> userList) {
+		this.userList = userList;
+	}
+	public JButton getBtnConnect() {
+		return btnConnect;
+	}
+	public void setBtnConnect(JButton btnConnect) {
+		this.btnConnect = btnConnect;
+	}
+	public JButton getBtnNickname() {
+		return btnNickname;
+	}
+	public void setBtnNickname(JButton btnNickname) {
+		this.btnNickname = btnNickname;
+	}
+	public JButton getBtnFuntion1() {
+		return btnFuntion1;
+	}
+	public void setBtnFuntion1(JButton btnFuntion1) {
+		this.btnFuntion1 = btnFuntion1;
+	}
+	public JButton getBtnFuntion2() {
+		return btnFuntion2;
+	}
+	public void setBtnFuntion2(JButton btnFuntion2) {
+		this.btnFuntion2 = btnFuntion2;
+	}
+	public JButton getBtnFuntion3() {
+		return btnFuntion3;
+	}
+	public void setBtnFuntion3(JButton btnFuntion3) {
+		this.btnFuntion3 = btnFuntion3;
+	}
+	public JButton getBtnFuntion4() {
+		return btnFuntion4;
+	}
+	public void setBtnFuntion4(JButton btnFuntion4) {
+		this.btnFuntion4 = btnFuntion4;
+	}
+	public JButton getBtnNameChange() {
+		return btnNameChange;
+	}
+	public void setBtnNameChange(JButton btnNameChange) {
+		this.btnNameChange = btnNameChange;
+	}
+	public JButton getBtnSend() {
+		return btnSend;
+	}
+	public void setBtnSend(JButton btnSend) {
+		this.btnSend = btnSend;
+	}
+	public Socket getS() {
+		return s;
+	}
+	public void setS(Socket s) {
+		this.s = s;
+	}
+	public DataInputStream getDis() {
+		return dis;
+	}
+	public void setDis(DataInputStream dis) {
+		this.dis = dis;
+	}
+	public DataOutputStream getDos() {
+		return dos;
+	}
+	public void setDos(DataOutputStream dos) {
+		this.dos = dos;
+	}
+	public String getTaImgPath() {
+		return taImgPath;
+	}
+	public void setTaImgPath(String taImgPath) {
+		this.taImgPath = taImgPath;
+	}
+	public Image getImg() {
+		return img;
+	}
+	public void setImg(Image img) {
+		this.img = img;
+	}
+	public ActionListener getListener() {
+		return listener;
+	}
+	public void setListener(ActionListener listener) {
+		this.listener = listener;
+	}
 
+	
 }

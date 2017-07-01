@@ -33,7 +33,7 @@ public class ChatServer {
 	private JScrollPane spServerLog;
 	private JButton btnStart, btnStop, btnFunction1, btnFunction2, btnFunction3, btnFunction4 ;
 
-	private ServerThread sThread;
+	private ServerThread serverThread;
 	private int port;
 	static String serverTime;
 	
@@ -43,8 +43,11 @@ public class ChatServer {
 			String cmd = e.getActionCommand();
 			
 			switch( cmd ) {
-			case "A":
+			case "startServer":
 				StartServer();
+				break;
+			case "stopServer":
+				stopServer();
 				break;
 			case "F1":
 				getServerIP();
@@ -59,6 +62,15 @@ public class ChatServer {
 		initGUI();
 		getServerIP();
 	}
+	
+	private void stopServer() {
+		char protocol = 'Z';
+		int command = -4;
+		String msg = String.format("%s서버가 정지되었습니다.", serverTime);
+		serverThread.sendAdminMessage( protocol, command, msg );
+		serverThread.stopServer();
+	}
+	
 	// 시간을 남겨보자.
 	public void setServerTime(){
 	
@@ -91,9 +103,9 @@ public class ChatServer {
 	}
 
 	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
-	public void controlStopBtton() {
-		btnStart.setEnabled(false);
-		btnStop.setEnabled(true);
+	public void controlStopButton(boolean state) {
+		btnStart.setEnabled(!state);
+		btnStop.setEnabled(state);
 	}
 
 	// start 버튼 눌렸을 때 동작할 메서드.
@@ -121,8 +133,8 @@ public class ChatServer {
 		}
 		// 입력된 포트가 정상일 때 진행.
 		tfPort.setEditable(false);
-		sThread = new ServerThread( this );
-		new Thread(sThread).start();
+		serverThread = new ServerThread( this );
+		new Thread(serverThread).start();
 		
 	}
 
@@ -148,7 +160,7 @@ public class ChatServer {
 		mainPanel.add(nPanel, "North");
 		nPanel.add(new JLabel("Port : "), "West");
 		tfPort = new JTextField("12345");
-		tfPort.setActionCommand("A");
+		tfPort.setActionCommand("port");
 		tfPort.addActionListener(listener);
 		nPanel.add(tfPort, "Center");
 		// main.center
@@ -184,8 +196,8 @@ public class ChatServer {
 		sPanelCenter.add(btnFunction4);
 		btnStart = new JButton("start");
 		btnStop = new JButton("stop");
-		btnStart.setActionCommand("A");
-		btnStop.setActionCommand("B");
+		btnStart.setActionCommand("startServer");
+		btnStop.setActionCommand("stopServer");
 		btnStart.addActionListener(listener);
 		btnStop.addActionListener(listener);
 		btnStop.setEnabled(false);
@@ -302,10 +314,10 @@ public class ChatServer {
 		this.btnFunction4 = btnFunction4;
 	}
 	public ServerThread getsThread() {
-		return sThread;
+		return serverThread;
 	}
 	public void setsThread(ServerThread sThread) {
-		this.sThread = sThread;
+		this.serverThread = sThread;
 	}
 	public int getPort() {
 		return port;

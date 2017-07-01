@@ -53,13 +53,18 @@ public class ChatClient {
 		public void actionPerformed(ActionEvent e) {
 			
 			String cmd = e.getActionCommand();
+			
 			switch( cmd ) {
+			
 			case "connection":
 				connectServer();
 				break;
-				
+			case "disconnection":
+				disconnectServer();
+				break;
 			case "send" :
 				sendMessage();
+				tfMessage.grabFocus();
 				break;
 			}
 		}
@@ -68,6 +73,15 @@ public class ChatClient {
 	public ChatClient() {
 		initGUI();
 	}
+	// 서버와 접솝을 종료하는 메서드.
+	private void disconnectServer() {
+		
+		doExitEvent(5);
+		appendClientLog(">> 접속을 종료하였습니다. <<");
+		changeButton(false);
+		
+	}
+	
 	// 메시지 전송을 위한 메서드.
 	private void sendMessage() {
 
@@ -145,7 +159,7 @@ public class ChatClient {
 		
 	}
 	// 서버와 연결되었을 때 버튼의 상태 변경 메서드.
-	private void changeButton( boolean state ) {
+	public void changeButton( boolean state ) {
 		
 		btnSend.setEnabled(state);
 		btnNickname.setEnabled(state);
@@ -153,23 +167,67 @@ public class ChatClient {
 		btnFuntion2.setEnabled(state);
 		btnFuntion3.setEnabled(state);
 		btnFuntion4.setEnabled(state);
-		btnConnect.setText("종료");
-		btnConnect.setBackground(Color.red);
-		btnConnect.setActionCommand("disconnection");
-		tfPort.setEnabled(!state);
-		tfIP.setEnabled(!state);
-		tfMessage.grabFocus();
-		
+
+		// 현재 상태에 따라 분기.
+		if( state ) {
+			btnConnect.setText("끊기");
+			btnConnect.setBackground(Color.RED);
+			btnConnect.setActionCommand("disconnection");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfMessage.grabFocus();
+		} else {
+			btnConnect.setText("접속");
+			btnConnect.setBackground(Color.GREEN);
+			btnConnect.setActionCommand("connection");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfIP.grabFocus();
+		}
 	}
 	
+	// 클라 종료시 호출된 메서드.
+	public void doExitEvent(int state) {
+		
+		try {
+			// 서버에게도 클라가 종료되었음을 알림.
+			if( dos != null ) {
+				dos.writeChar('X');
+				dos.flush();
+			}
+		} catch( IOException e ) {
+			appendClientLog("클라 종료 애러" + e.toString());
+		} finally {
+			if( s != null ) {
+				try {s.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+			if( dis != null ) {
+				try {dis.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+			if( dos != null ) {
+				try {dos.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				}
+			}
+		}
+
+		// 종료인지 접속 종료인지 판단.
+		if( state == 0 ) {
+			// X 버튼이면 다 닫고 종료.
+			System.exit(0);
+		}
+	}
 	private void initGUI() {
 
 		f = new JFrame("Chatting Client");
 		f.setBounds(0, 600, 500, 400);
-		f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		// 클라이언트 종료.
 		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {System.exit(0);}
+			public void windowClosing(WindowEvent e) {
+				// 클라 종료 메서드 호출. 인자 0은 종료.
+				doExitEvent(0);
+			;}
 		});
 
 		// main
@@ -187,6 +245,7 @@ public class ChatClient {
 		btnConnect.addActionListener(listener);
 		btnConnect.setActionCommand("connection");
 		btnConnect.setFocusable(false);
+		btnConnect.setBackground(Color.GREEN);
 		nPanel.add(btnConnect, "East");
 		nPanel.add(nPanelCenter, "Center");
 		nPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
@@ -203,7 +262,6 @@ public class ChatClient {
 		tfPort = new JTextField("12345", 10);
 		nPanelCenterRight.add(tfPort, "Center");
 		nPanelCenter.add(nPanelCenterRight);
-
 		mainPanel.add(nPanel, "North");
 
 		// main.center
@@ -223,16 +281,10 @@ public class ChatClient {
 		cPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createLineBorder(Color.BLACK),
 				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
-		
 
-		// taImgPath = "./src/com/never/data/jung/chat/file/a.jpg";
 		taClientLog = new JTextArea();
+		taClientLog.setEditable(false);
 		spClientLog = new JScrollPane(taClientLog);
-		// taChatLog = createTextArea(taImgPath);
-		// editer 실험중
-		// epChatLog = new JEditorPane();
-		// spChatLog = new JScrollPane(epChatLog);
-		// 가로 스크롤 나오지 않게 함.
 		spClientLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		cPanelCenter.add(spClientLog, "Center");
 		cPanelCenter.add(cPanelCenterSouth, "South");
@@ -297,29 +349,16 @@ public class ChatClient {
 		// main.south
 		// 뭔가 붙여서 추가하면 좋겠음.
 		// 지금은 빈 공간임.
-		//		sPanel = new JPanel(new BorderLayout());
-		//		mainPanel.add(sPanel, "South");
-		//		JLabel bLabel = new JLabel("이미지를 띄어 볼까?");
-		//		bLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
-		//		sPanel.add(bLabel);
+		// sPanel = new JPanel(new BorderLayout());
+		// mainPanel.add(sPanel, "South");
+		// JLabel bLabel = new JLabel("이미지를 띄어 볼까?");
+		// bLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// sPanel.add(bLabel);
 
 		f.setVisible(true);
 
 	}
 	
-	// 이미지 변경을  실험중.
-//	private JTextArea createTextArea(String taImgPath) {
-//		img = new ImageIcon(taImgPath).getImage();
-//		taChatLog = new JTextArea(){
-//			{ setOpaque( false ) ; }
-//			public void paintComponent(Graphics g){
-//				g.drawImage(img,0,0,null);
-//				super.paintComponent(g);
-//			}
-//		};
-//		return taChatLog;
-//	}
-//
 	public static void main(String[] args) {
 
 		new ChatClient();

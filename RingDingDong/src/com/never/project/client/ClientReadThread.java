@@ -1,4 +1,4 @@
-package com.never.data.jung.chat.client;
+package com.never.project.client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

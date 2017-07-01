@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 public class ServerThread implements Runnable {
 
@@ -19,15 +20,48 @@ public class ServerThread implements Runnable {
 		this.server = chatServer;
 	}
 
+	// 쓰레드 종료시 호출 되는 메서드.
+	public void stopServer() {
+		
+		// 일단 반복문을 종료하고,
+		onAir = false;
+		try {
+			// 서버 소켓을 종료하고,
+			ss.close();
+			for( ServerCom com : comList ) {
+				// com 객체도 닫아준 뒤에 삭제한다.
+				com.shutDownClient();
+				removeCom(com);
+			}
+				
+		} catch (IOException e) {
+			server.appendServerLog("서버 정지 오류 : " + e.toString());
+		} catch (ConcurrentModificationException e) {
+			server.appendServerLog("서버 정지 오류 : " + e.toString());
+		}
+		server.controlStopButton(false);
+		
+	}
+	
 	// 채팅은 연결된 모두에게 보내야 한다.
 	// 연결되어진 클라 모두에게 메시지를 보낸다.
 	public void sendAllMessage( char protocol, String msg ) {
 		for( ServerCom com : comList ) {
-			com.sendMesagee( protocol, msg );
+			com.sendMessage( protocol, msg );
+		}
+		
+	}
+	public void sendAdminMessage( char protocol, int command, String msg ) {
+		for( ServerCom com : comList ) {
+			com.sendAdminMessage( protocol, command, msg );
 		}
 		
 	}
 	
+	// 삭제 요청한 serverCom 클라 객체 삭제.
+	public void removeCom(ServerCom serverCom) {
+		comList.remove(serverCom);
+	}
 	
 	@Override
 	public void run() {
@@ -42,7 +76,7 @@ public class ServerThread implements Runnable {
 			return;
 		}
 		// 서버 소켓이 정상적으로 생성되었다는 것을 알림.
-		server.controlStopBtton();
+		server.controlStopButton(true);
 		server.appendServerLog("서버 소켓 생성 성공!");
 		onAir = true;
 		
