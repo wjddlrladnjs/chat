@@ -97,7 +97,7 @@ public class ChatCilent {
 		if(msg.length()==0){
 			return ;
 		}
-		if(!msg.endsWith("exit")){
+		if(!msg.endsWith("exit")){//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 			 
 		rName = list.getSelectedValue();    //get,selet 선택된것  . 모델에는 데이터가 선택된게없네?   그럼 리스트를보자  getSelectedValue  선택하면 그값을보여준다 
 		try{
@@ -113,7 +113,7 @@ public class ChatCilent {
 				dos.flush();
 				dos.writeUTF(rName);
 				dos.flush();
-//				list.clearSelection(); //선택된게 싺~ 풀린다    클리어 셀렉션 
+//				list.clearSelection(); //선택된게 싺~ 풀린다    클리어 셀렉션   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //				dos.writeUTF(msg);
 //				dos.flush();
 			}
@@ -125,8 +125,8 @@ public class ChatCilent {
 
 		}
 		}else if(msg.equals("exit")){ //귓속말을 보내고 귓속말상태가 풀릴려면  채팅창에 exit 를 써야지만 풀리도록 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 근데귓속말이 자신한테안보이니까 수정좀할게요 
-			list.clearSelection();
-		}
+			list.clearSelection();//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@
 		tfMessge.setText("");
 	}
