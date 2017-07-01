@@ -54,7 +54,7 @@ public class ServerGUI {
 	// server Log에 메시지를 띄웁니다.
 	public void appendServerLog( String msg ) {
 		int length = taServerLog.getText().length();
-		taServerLog.append(msg + "/n");
+		taServerLog.append(msg + "\n");
 		// 자동 스크롤링
 		taServerLog.setCaretPosition( length );
 		
