@@ -5,23 +5,23 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ServerCom extends Thread {
+public class ServerCom implements Runnable {
 
 	ChatServer server;
 	ServerThread serverThread;
+	Socket s;
 	DataInputStream dis;
 	DataOutputStream dos;
-	Socket s;
 	String clientIP;
 	
 	boolean onAir;
 
 	// 인자로 전달받은 객체를 맴버 변수에 저장.
-	public ServerCom(ChatServer server, ServerThread serverThread, Socket s) {
+	public ServerCom(ChatServer server, ServerThread serverThread) {
 		
 		this.server = server;
 		this.serverThread = serverThread;
-		this.s = s;
+		this.s = serverThread.getS();
 		clientIP = s.getInetAddress().getHostAddress();
 		onAir = true;
 	}

@@ -25,7 +25,7 @@ public class ClientReadThread implements Runnable{
 		
 		// 예외가 발행해도 종료하지 않는다.
 		try {
-			
+			System.out.println("여긴 오니?");
 			while( true ) {
 
 				protocol = dis.readChar();

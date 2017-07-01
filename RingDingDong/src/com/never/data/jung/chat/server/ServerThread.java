@@ -9,6 +9,8 @@ public class ServerThread implements Runnable {
 
 	private ChatServer server;
 	private ServerSocket ss;
+	private Socket s;
+	private ServerCom serverCom;
 	private boolean onAir;
 	private ArrayList<ServerCom> comList = new ArrayList<ServerCom>();
 	
@@ -48,13 +50,13 @@ public class ServerThread implements Runnable {
 		while( onAir ) {
 			
 			// 클라이언트와 연결될 소켓을 만든다.
-			Socket s = null;
-			ServerCom serverCom = null;
+			s = null;
+			serverCom = null;
 			String clientIP = "";
 
 			try {
 				server.appendServerLog("서버가 연결을 기다립니다. . . . .");
-				
+			
 				// 클라의 연결을 기다리다가 연결 요청이 생기면 소켓을 연결한다.
 				s = ss.accept();
 				clientIP = s.getInetAddress().getHostAddress();
@@ -62,10 +64,9 @@ public class ServerThread implements Runnable {
 			
 				// 서버는 여러 클라이언트와 동시 소통을 한다.
 				// 소통하고 있는 객체를 순서대로 저장한다.
-				serverCom = new ServerCom( server, this, s );
+				serverCom = new ServerCom( server, this );
 				comList.add(serverCom);
-				serverCom.start();
-//				new Thread(ServerCom).start();
+				new Thread(serverCom).start();
 				
 			} catch( IOException e ) {
 				server.appendServerLog("서버 접속 대기 오류" + e.toString());
@@ -97,6 +98,30 @@ public class ServerThread implements Runnable {
 
 	public void setOnAir(boolean onAir) {
 		this.onAir = onAir;
+	}
+
+	public Socket getS() {
+		return s;
+	}
+
+	public void setS(Socket s) {
+		this.s = s;
+	}
+
+	public ServerCom getServerCom() {
+		return serverCom;
+	}
+
+	public void setServerCom(ServerCom serverCom) {
+		this.serverCom = serverCom;
+	}
+
+	public ArrayList<ServerCom> getComList() {
+		return comList;
+	}
+
+	public void setComList(ArrayList<ServerCom> comList) {
+		this.comList = comList;
 	}
 
 }

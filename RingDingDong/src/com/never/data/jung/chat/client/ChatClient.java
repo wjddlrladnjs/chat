@@ -26,7 +26,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 public class ChatClient {
-
+	static int num = 0;
+	
 	private JFrame f;
 	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
 	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
@@ -97,7 +98,7 @@ public class ChatClient {
 	}
 	// 접속 버튼 눌렀을 때 해당 정보로 서버에 접속시도.
 	private void connectServer() {
-		
+	
 		// 입력된 포트 정보를 가져온다.
 		int port = 12345;
 		String inputIP = tfIP.getText().trim();
@@ -110,17 +111,8 @@ public class ChatClient {
 				if( port < 1 || port > 65535) {
 					throw new NumberFormatException("");
 				}
-				
-				s = new Socket(inputIP, port);
-			} catch( IOException e ) {
-				appendClientLog("소켓 생성에 실패했습니다." + e.toString());
-				tfIP.selectAll();
-				tfPort.selectAll();
-				tfIP.grabFocus();
-				
-				return;
 			} catch( NumberFormatException e ) {
-				appendClientLog("잘못된 입력입니다.");
+				appendClientLog("잘못된 입력입니다." + e.toString());
 				tfIP.selectAll();
 				tfPort.selectAll();
 				tfIP.grabFocus();
@@ -145,7 +137,7 @@ public class ChatClient {
 			// 보내는 것은 이 객채로 가능 하지만,
 			// 받는 작업은 언제 올지 모르기 때문에 무한 반복으로 기다려야 한다.
 			// 이럴 때 쓰라고 쓰래드를 만들어서 쓴다.
-			new ClientReadThread(this);
+			 new Thread(new ClientReadThread(this)).start();;
 			
 		} catch( IOException e ) {
 			appendClientLog("클라 I/O 애러" + e.toString());
