@@ -10,6 +10,8 @@ import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -33,6 +35,7 @@ public class ChatServer {
 
 	private ServerThread sThread;
 	private int port;
+	static String serverTime;
 	
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -56,15 +59,25 @@ public class ChatServer {
 		initGUI();
 		getServerIP();
 	}
+	// 시간을 남겨보자.
+	public void setServerTime(){
+	
+		GregorianCalendar cal = new GregorianCalendar();
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		String time = sdf.format(cal.getTime());
+		serverTime = "["+time+"]";
+		
+	}
+	
 	// server log 메시지 띄우는 메서드.
 	public void appendServerLog( String msg ) {
+		setServerTime();
 		int length = taServerLog.getText().length();
-		taServerLog.append(msg + "\n");
+		taServerLog.append(serverTime + msg + "\n");
 		// 자동 스크롤링
 		taServerLog.setCaretPosition( length );
 		
 	}
-	
 	// server의 IP 받아서  출력하는 메서드.
 	private void getServerIP() {
 

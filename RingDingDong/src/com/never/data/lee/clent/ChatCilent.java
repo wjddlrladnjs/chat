@@ -93,10 +93,13 @@ public class ChatCilent {
 
 	void sendMessage(){
 		String msg = tfMessge.getText(); //tf메서드가많다 나중에확인해봐라 
+		String rName ; 
 		if(msg.length()==0){
 			return ;
 		}
-		String rName = list.getSelectedValue();    //get,selet 선택된것  . 모델에는 데이터가 선택된게없네?   그럼 리스트를보자  getSelectedValue  선택하면 그값을보여준다 
+		if(!msg.endsWith("exit")){//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			 
+		rName = list.getSelectedValue();    //get,selet 선택된것  . 모델에는 데이터가 선택된게없네?   그럼 리스트를보자  getSelectedValue  선택하면 그값을보여준다 
 		try{
 
 			if(rName == null){ //이름선택안됐을때
@@ -110,7 +113,7 @@ public class ChatCilent {
 				dos.flush();
 				dos.writeUTF(rName);
 				dos.flush();
-				list.clearSelection(); //선택된게 싺~ 풀린다    클리어 셀렉션 
+//				list.clearSelection(); //선택된게 싺~ 풀린다    클리어 셀렉션   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //				dos.writeUTF(msg);
 //				dos.flush();
 			}
@@ -121,6 +124,10 @@ public class ChatCilent {
 		}catch(IOException e ){
 
 		}
+		}else if(msg.equals("exit")){ //귓속말을 보내고 귓속말상태가 풀릴려면  채팅창에 exit 를 써야지만 풀리도록 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 근데귓속말이 자신한테안보이니까 수정좀할게요 
+			list.clearSelection();//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@
 		tfMessge.setText("");
 	}
 
@@ -174,7 +181,7 @@ public class ChatCilent {
 		JPanel nPanelSubSub1 = new JPanel(new BorderLayout()); // 
 		JPanel nPanelSubSub2 = new JPanel(new BorderLayout()); // 
 
-		tfIP = new JTextField("192.168.205.") ; 
+		tfIP = new JTextField("59.9.187.151") ; 
 		nPanelSubSub1.add(new JLabel("서버 IP :  "),BorderLayout.WEST);
 		nPanelSubSub1.add(tfIP,BorderLayout.CENTER);
 
