@@ -13,6 +13,10 @@ import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -40,6 +44,11 @@ public class MultiChatClient {
 	JButton btnChangeBgrImg;
 	JFileChooser fc;
 	Image img;
+	File file;
+	
+	FileInputStream fis = null;
+	FileOutputStream fos = null;
+	
 	
 	//userList위한것들
 	JList<String> list;	//얘도 JScrollPane해줘야댐SSSsss   //모델이 따로있다(listmodel)을 상속
@@ -86,7 +95,7 @@ public class MultiChatClient {
 		
 		
 		int returnVal = fc.showOpenDialog(f);
-		File file = null;
+		file = null;
 		
 		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
 			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
@@ -97,6 +106,20 @@ public class MultiChatClient {
 		}
 		
 		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
+		
+		//서버로 보내자
+		sendImageFile(file);
+		
+	}
+	
+	void sendImageFile(File file){
+		try {
+			fos = new FileOutputStream(file);
+			
+		} catch (FileNotFoundException e) {
+			addChatAlert("파일 출력 에라: " + e);
+		}
+		
 		
 	}
 	
