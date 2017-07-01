@@ -2,18 +2,19 @@ package com.never.data.jung.chat.client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -41,6 +42,8 @@ public class ChatClient {
 	JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
 
 	Socket s;
+	DataInputStream dis;
+	DataOutputStream dos;
 	
 	String taImgPath;
 	Image img;
@@ -105,9 +108,45 @@ public class ChatClient {
 				return;
 			} 
 		} // if end.
-		appendClientLog("소켓 연결 성공!");
+		// IP와 Port가 준비되었으니 연결을 준비한다.
+		s = null;
+		try {
+			s = new Socket(inputIP, port);
+			appendClientLog("소켓 연결 완료");
+			
+			// 소켓이 연결되었으면, I/O 준비를 하자.
+			dis = new DataInputStream(s.getInputStream());
+			dos = new DataOutputStream(s.getOutputStream());
+			appendClientLog("I/O 연결 완료");
+			
+			// 여기까지 진행되면 서버와 통신이 가능하다.
+			// 버튼 상태를 변경한다.
+			changeButton(true);
+			
+			
+			
+		} catch( IOException e ) {
+			appendClientLog(e.toString());
+		}
+		
 	}
-	
+	// 서버와 연결되었을 때 버튼의 상태 변경 메서드.
+	private void changeButton( boolean state ) {
+		
+		btnSend.setEnabled(state);
+		btnNickname.setEnabled(state);
+		btnFuntion1.setEnabled(state);
+		btnFuntion2.setEnabled(state);
+		btnFuntion3.setEnabled(state);
+		btnFuntion4.setEnabled(state);
+		btnConnect.setText("종료");
+		btnConnect.setBackground(Color.red);
+		btnConnect.setActionCommand("disconnection");
+		tfPort.setEnabled(!state);
+		tfIP.setEnabled(!state);
+		tfMessage.grabFocus();
+		
+	}
 	
 	private void initGUI() {
 
@@ -133,6 +172,7 @@ public class ChatClient {
 		btnConnect = new JButton("접속");
 		btnConnect.addActionListener(listener);
 		btnConnect.setActionCommand("connection");
+		btnConnect.setFocusable(false);
 		nPanel.add(btnConnect, "East");
 		nPanel.add(nPanelCenter, "Center");
 		nPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
@@ -171,7 +211,7 @@ public class ChatClient {
 				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
 		
 
-		taImgPath = "./src/com/never/data/jung/chat/file/a.jpg";
+		// taImgPath = "./src/com/never/data/jung/chat/file/a.jpg";
 		taClientLog = new JTextArea();
 		spClientLog = new JScrollPane(taClientLog);
 		// taChatLog = createTextArea(taImgPath);
@@ -187,6 +227,7 @@ public class ChatClient {
 		btnSend = new JButton("send");
 		btnSend.addActionListener(listener);
 		btnSend.setActionCommand("send");
+		btnSend.setEnabled(false);
 		cPanelCenterSouth.add(btnSend, "East");
 
 		// main.center.east
@@ -224,10 +265,15 @@ public class ChatClient {
 		btnFuntion2.setActionCommand("F2");
 		btnFuntion3.setActionCommand("F3");
 		btnFuntion4.setActionCommand("F4");
+		btnFuntion1.setEnabled(false);
+		btnFuntion2.setEnabled(false);
+		btnFuntion3.setEnabled(false);
+		btnFuntion4.setEnabled(false);
 		cPanelEastSouth.add(cPanelEastSouthSouth, "South");
 		btnNickname = new JButton("nick");
 		btnNickname.addActionListener(listener);
 		btnNickname.setActionCommand("nick");
+		btnNickname.setEnabled(false);
 		cPanelEastSouthSouth.add(btnNickname, "East");
 		tfNickname = new JTextField(5);
 		cPanelEastSouthSouth.add(tfNickname, "Center");
