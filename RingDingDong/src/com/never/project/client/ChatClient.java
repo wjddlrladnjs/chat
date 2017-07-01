@@ -1,4 +1,4 @@
-package com.never.share;
+package com.never.project.client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.Socket;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -23,7 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
-public class ChatGUI {
+public class ChatClient {
 
 	JFrame f;
 	JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
@@ -32,12 +34,14 @@ public class ChatGUI {
 	sPanel;
 	JTextField tfIP, tfPort, tfNickname, tfMessage;
 	
-	JTextArea taChatLog;
+	JTextArea taClientLog;
 	// JEditorPane epChatLog;
-	JScrollPane spUserList, spChatLog;
+	JScrollPane spUserList, spClientLog;
 	JList<String> userList;
-	JButton btnConnect, btnNickname, btnFun1, btnFun2, btnFun3, btnFun4, btnNameChange, btnSend;
+	JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
 
+	Socket s;
+	
 	String taImgPath;
 	Image img;
 	
@@ -48,8 +52,8 @@ public class ChatGUI {
 			String cmd = e.getActionCommand();
 			
 			switch( cmd ) {
-			case "A":
-
+			case "connection":
+				connectServer();
 				break;
 				
 			default:
@@ -58,10 +62,53 @@ public class ChatGUI {
 		}
 	};
 	
-	public ChatGUI() {
+	public ChatClient() {
 		initGUI();
 	}
+	// client log 메시지 띄우는 메서드.
+	public void appendClientLog( String msg ) {
+		int length = taClientLog.getText().length();
+		taClientLog.append(msg + "\n");
+		// 자동 스크롤링
+		taClientLog.setCaretPosition( length );
+	}
+	// 접속 버튼 눌렀을 때 해당 정보로 서버에 접속시도.
+	private void connectServer() {
+		
+		// 입력된 포트 정보를 가져온다.
+		int port = 12345;
+		String inputIP = tfIP.getText().trim();
+		String inputPort = tfPort.getText().trim();
+		
+		// 입력된 port가 잘못되었을 때 처리.
+		if( (inputPort != null && !"".equals(inputPort)) && (inputIP != null && !"".equals(inputIP)) ) {
+			try {
+				port = Integer.parseInt(inputPort);
+				if( port < 1 || port > 65535) {
+					throw new NumberFormatException();
+				}
+				
+				s = new Socket(inputIP, port);
+			} catch( IOException e ) {
+				appendClientLog("소켓 생성에 실패했습니다." + e.toString());
+				tfIP.selectAll();
+				tfPort.selectAll();
+				tfIP.grabFocus();
+				
+				return;
+			} catch( NumberFormatException e ) {
+				appendClientLog("잘못된 입력입니다.");
+				tfIP.selectAll();
+				tfPort.selectAll();
+				tfIP.grabFocus();
 
+				return;
+			} 
+		} // if end.
+		appendClientLog("소켓 연결 성공!");
+	}
+	
+	
 	private void initGUI() {
 
 		f = new JFrame("Chatting Client");
@@ -74,7 +121,6 @@ public class ChatGUI {
 
 		// main
 		mainPanel = new JPanel(new BorderLayout());
-		mainPanel.setBackground(Color.WHITE);
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		f.add(mainPanel);
 
@@ -85,17 +131,20 @@ public class ChatGUI {
 		nPanelCenterRight = new JPanel(new BorderLayout());
 
 		btnConnect = new JButton("접속");
+		btnConnect.addActionListener(listener);
+		btnConnect.setActionCommand("connection");
 		nPanel.add(btnConnect, "East");
 		nPanel.add(nPanelCenter, "Center");
+		nPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"server info", TitledBorder.LEFT,TitledBorder.CENTER)));
 
 		nPanelCenter.add(nPanelCenterLeft);
 		nPanelCenterLeft.add(new JLabel("IP : "), "West");
-		nPanelCenterLeft.setBackground(Color.WHITE);
 		tfIP = new JTextField("1.1.1.6", 10);
 		nPanelCenterLeft.add(tfIP, "Center");
 		nPanelCenter.add(nPanelCenterRight);
 		nPanelCenterRight.add(new JLabel("Port : "), "West");
-		nPanelCenterRight.setBackground(Color.WHITE);
 		nPanelCenter.add(nPanelCenterRight);
 		tfPort = new JTextField("12345", 10);
 		nPanelCenterRight.add(tfPort, "Center");
@@ -117,21 +166,27 @@ public class ChatGUI {
 		// main.center.center
 		mainPanel.add(cPanel, "Center");
 		cPanel.add(cPanelCenter);
+		cPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
+		
 
 		taImgPath = "./src/com/never/data/jung/chat/file/a.jpg";
-		taChatLog = new JTextArea();
-		spChatLog = new JScrollPane(taChatLog);
+		taClientLog = new JTextArea();
+		spClientLog = new JScrollPane(taClientLog);
 		// taChatLog = createTextArea(taImgPath);
 		// editer 실험중
 		// epChatLog = new JEditorPane();
 		// spChatLog = new JScrollPane(epChatLog);
 		// 가로 스크롤 나오지 않게 함.
-		spChatLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		cPanelCenter.add(spChatLog, "Center");
+		spClientLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		cPanelCenter.add(spClientLog, "Center");
 		cPanelCenter.add(cPanelCenterSouth, "South");
 		tfMessage = new JTextField();
 		cPanelCenterSouth.add(tfMessage, "Center");
 		btnSend = new JButton("send");
+		btnSend.addActionListener(listener);
+		btnSend.setActionCommand("send");
 		cPanelCenterSouth.add(btnSend, "East");
 
 		// main.center.east
@@ -141,7 +196,6 @@ public class ChatGUI {
 		userList = new JList<String>();
 		userList.setFixedCellWidth(130);
 		spUserList = new JScrollPane(userList);
-		spUserList.setBackground(Color.WHITE);
 		spUserList.setBorder(new TitledBorder("user list"));
 		spUserList.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createLineBorder(Color.BLACK),
@@ -154,16 +208,26 @@ public class ChatGUI {
 				BorderFactory.createLineBorder(Color.BLACK),
 				"function", TitledBorder.CENTER,TitledBorder.CENTER)));
 		cPanelEastSouth.add(cPanelEastSouthNorth, "North");
-		btnFun1 = new JButton("Fun1");
-		btnFun2 = new JButton("Fun2");
-		btnFun3 = new JButton("Fun3");
-		btnFun4 = new JButton("Fun4");
-		cPanelEastSouthNorth.add(btnFun1);
-		cPanelEastSouthNorth.add(btnFun2);
-		cPanelEastSouthNorth.add(btnFun3);
-		cPanelEastSouthNorth.add(btnFun4);
+		btnFuntion1 = new JButton("Fun1");
+		btnFuntion2 = new JButton("Fun2");
+		btnFuntion3 = new JButton("Fun3");
+		btnFuntion4 = new JButton("Fun4");
+		cPanelEastSouthNorth.add(btnFuntion1);
+		cPanelEastSouthNorth.add(btnFuntion2);
+		cPanelEastSouthNorth.add(btnFuntion3);
+		cPanelEastSouthNorth.add(btnFuntion4);
+		btnFuntion1.addActionListener(listener);
+		btnFuntion2.addActionListener(listener);
+		btnFuntion3.addActionListener(listener);
+		btnFuntion4.addActionListener(listener);
+		btnFuntion1.setActionCommand("F1");
+		btnFuntion2.setActionCommand("F2");
+		btnFuntion3.setActionCommand("F3");
+		btnFuntion4.setActionCommand("F4");
 		cPanelEastSouth.add(cPanelEastSouthSouth, "South");
 		btnNickname = new JButton("nick");
+		btnNickname.addActionListener(listener);
+		btnNickname.setActionCommand("nick");
 		cPanelEastSouthSouth.add(btnNickname, "East");
 		tfNickname = new JTextField(5);
 		cPanelEastSouthSouth.add(tfNickname, "Center");
@@ -182,7 +246,6 @@ public class ChatGUI {
 	}
 	
 	// 이미지 변경을  실험중.
-	
 //	private JTextArea createTextArea(String taImgPath) {
 //		img = new ImageIcon(taImgPath).getImage();
 //		taChatLog = new JTextArea(){
@@ -197,7 +260,7 @@ public class ChatGUI {
 //
 	public static void main(String[] args) {
 
-		new ChatGUI();
+		new ChatClient();
 
 	}
 

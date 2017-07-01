@@ -1,4 +1,4 @@
-package com.never.data.jung.chat.server;
+package com.never.project.server;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
