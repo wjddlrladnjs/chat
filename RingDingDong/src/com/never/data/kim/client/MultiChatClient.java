@@ -110,6 +110,7 @@ public class MultiChatClient {
 		//서버로 보내자
 		sendImageFile(file);
 		
+		
 	}
 	
 	void sendImageFile(File file){
