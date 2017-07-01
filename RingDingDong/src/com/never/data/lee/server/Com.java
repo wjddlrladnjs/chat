@@ -109,7 +109,7 @@ public class Com extends Thread{
 					String pName = dis.readUTF(); //이름받아옴 
 					msg = dis.readUTF();
 					server.addChatList(name + " 님이"+pName+" 에게 "+msg+"라고 귓속말을보냄");
-					serverthread.sendOneMessage(name,pName,msg);
+					serverthread.sendOneMessage(this,name,pName,msg);
 					
 					break;
 				
