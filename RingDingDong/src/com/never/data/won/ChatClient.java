@@ -22,20 +22,24 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+//Tip.
+//Client start 초기 ip 및 port 값은 startClient에서 설정을 변경해서 작업 할 수 있습니다. 
+//Exception 값을 바꿔두면 값을 입력하지 않아도 해당 값을 디폴트로 접속합니다.
 public class ChatClient {
-	JFrame f;
-	JTextField tfIP, tfPort, tfName, tfText;
-	JTextArea taLog;
-	JButton btn1, btn2, btnName, btnServerLog, btnImgBg;
-	JList<String> list;
-	DefaultListModel<String> model;
-
-	Socket socket;
+	
+	//GUI 변수
+	private JFrame f;
+	private JTextField tfIP, tfPort, tfName, tfText;
+	private JTextArea taLog;
+	private JButton btn1, btn2, btnName, btnServerLog, btnImgBg;
+	private JList<String> list;
+	private DefaultListModel<String> model;
+	//네트워크 변수
+	private Socket socket;
 	DataInputStream dis;
 	DataOutputStream dos;
 
-
-
+	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -53,6 +57,86 @@ public class ChatClient {
 			}
 		}		
 	};
+	
+	//client 시작. 입력오류에 따른 exception은 port에 숫자가 아닌 다른 입력이 오거나 ip와 port 중 빈 값이 있을 때만 발생한다.
+	//ip에 string은 넣지만 ip 주소 이외의 값을 넣거나 port에 숫자는 넣지만 port 규정에 어긋나는 값을 넣을 경우 
+	//exception은 발생하지 않고 client와 server 모두(?) 죽을 수 있으니 유의하길.
+	//본 메소드는 유효성을 ip와 port에 대한 유효성 검사만 함.
+	void startClient(){
+		try{
+			String ipAddr = tfIP.getText();
+			int port = Integer.parseInt(tfPort.getText());
+			addLog("Client is ready for connect...");
+			commenceClient(ipAddr, port);			
+		}catch(NumberFormatException e){
+			addLog("Client will connect with default into...");
+			commenceClient("192.168.0.4",12345);	//초기값 설정		
+		}catch(NullPointerException e){
+			addLog("Client will connect with default into...");
+			commenceClient("192.168.0.4",12345);			
+		}
+	}
+	
+	//Client 시작을 위한 메소드
+	void commenceClient(String ipAddr, int port){
+		try {
+			socket = new Socket(ipAddr, port);
+			dis = new DataInputStream(socket.getInputStream());
+			dos = new DataOutputStream(socket.getOutputStream());
+			btn1.setEnabled(false);
+			btn2.setEnabled(true);
+			dos.writeChar('A');
+			dos.flush();
+			String name = nickName();
+
+			dos.writeUTF(name);
+			String hello = dis.readUTF();
+			addLog(hello);
+			new ChatReadThread(this).start();
+		} catch (UnknownHostException e) {
+			addLog("Socket not connect b/c "+e);
+		} catch (IOException e1) {
+			addLog("Socket not connect b/c "+e1);
+		}
+	}
+	
+	//서버로 메세지 전송 메소드
+	void sendMessage(){
+		try{
+			if(!tfText.getText().equals(null)){		
+				String text = tfText.getText();	
+				dos.writeChar('M');
+				dos.writeUTF(text);
+				dos.flush();
+				
+				tfText.setText("");				
+			}
+		}catch(IOException e){
+			addLog("sendMessage IOException"+e);
+			tfText.setText("");
+		}
+	}
+	
+	//이름 변경 메소드
+	void changeNickName(){
+		try{
+			if(!tfName.getText().equals(null)){		
+
+				String text = tfName.getText();	
+				dos.writeChar('N');
+				dos.writeUTF(text);
+				dos.flush();
+
+				text = dis.readUTF();
+				setChatWindowName(text);
+				tfName.setText("");				
+			}
+		}catch(IOException e){
+			addLog("sendMessage IOException"+e);
+			tfName.setText("");
+		}
+	}
+	
 	//update User
 	public void updataUser(String oldName, String newName){
 		int idx = model.indexOf(oldName);
@@ -76,43 +160,9 @@ public class ChatClient {
 		for(String name : nameList){
 			model.addElement(name);
 		}
-	}
+	}	
 
-	void changeNickName(){
-		try{
-			if(!tfName.getText().equals(null)){		
-
-				String text = tfName.getText();	
-				dos.writeChar('N');
-				dos.writeUTF(text);
-				dos.flush();
-
-				tfName.setText("");				
-			}
-		}catch(IOException e){
-			addLog("sendMessage IOException"+e);
-			tfName.setText("");
-		}
-	}
-
-
-	void sendMessage(){
-		try{
-			if(!tfText.getText().equals(null)){		
-
-				String text = tfText.getText();	
-				dos.writeChar('M');
-				dos.writeUTF(text);
-				dos.flush();
-
-				tfText.setText("");				
-			}
-		}catch(IOException e){
-			addLog("sendMessage IOException"+e);
-			tfText.setText("");
-		}
-	}
-
+	//user의 window창 종료로 인한 퇴장시 적용 메소드
 	void exitClient(){
 		if(dos != null){
 			try{
@@ -125,23 +175,9 @@ public class ChatClient {
 
 			}
 		}
-	}
+	}	
 
-	void startClient(){
-		try{
-			String ipAddr = tfIP.getText();
-			int port = Integer.parseInt(tfPort.getText());
-			addLog("Client is ready for connect...");
-			commenceClient(ipAddr, port);			
-		}catch(NumberFormatException e){
-			addLog("Client will connect with default into...");
-			commenceClient("192.168.0.4",12345);			
-		}catch(NullPointerException e){
-			addLog("Client will connect with default into...");
-			commenceClient("192.168.0.4",12345);			
-		}
-	}
-
+	//대화명 변경시 유효성 검사 메소드
 	String nickName(){
 		String nickName = "";
 		nickName = tfName.getText();
@@ -150,61 +186,34 @@ public class ChatClient {
 		return nickName;
 	}
 
-	void commenceClient(String ipAddr, int port){
-
-		try {
-			socket = new Socket(ipAddr, port);
-			dis = new DataInputStream(socket.getInputStream());
-			dos = new DataOutputStream(socket.getOutputStream());
-			btn1.setEnabled(false);
-			btn2.setEnabled(true);
-			dos.writeChar('A');
-			dos.flush();
-			String name = nickName();
-
-			dos.writeUTF(name);
-			String hello = dis.readUTF();
-			addLog(hello);
-			new ChatReadThread(this).start();
-		} catch (UnknownHostException e) {
-			addLog("Socket not connect b/c "+e);
-		} catch (IOException e1) {
-			addLog("Socket not connect b/c "+e1);
-		}
-
-	}
-
+	//client log창 업데이트
 	void addLog(String msg){
 		taLog.append(msg+"\n");
 	}
 
+	//client 창 제목 업데이트
 	void setChatWindowName(String msg){
 		f.setTitle(String.format("Chatting Client[ %s ]", msg));
 	}
 
-	//model.setElementAt(string을 int위치에 집어 넣기);
-
+	//생성자
 	public ChatClient() {
 		initGUI();
 	}
 
+	//GUI 구현 메소드
 	void initGUI(){
 		f = new JFrame("Client Screen");
 		f.setBounds(700,100,500,500);
-		JPanel p1 = new JPanel(new BorderLayout());		// 아이피주소
-		JPanel p2 = new JPanel(new BorderLayout());		// 포트번호
-
-		JPanel p3 = new JPanel(new GridLayout(1,2));	// 아이비+포트
-
-		JPanel p4 = new JPanel(new BorderLayout());		//위쪽 마무리		
-		JPanel p5 = new JPanel(new BorderLayout());	
-
-		JPanel p6 = new JPanel(new BorderLayout());		//대화명 변경창
-		JPanel p71 = new JPanel(new GridLayout(1,2));	//버튼 2개(서버로그, 이미지 배경 변경)
-		JPanel p7 = new JPanel(new GridLayout(3,1));	//대화명변경 버튼 + 대화명	변경창 + 버튼2개		
-		JPanel p8 = new JPanel(new BorderLayout());
-
-
+		JPanel p1 = new JPanel(new BorderLayout());		// 아이피주소 버튼 + textfield
+		JPanel p2 = new JPanel(new BorderLayout());		// 포트번호 버튼 + textfield
+		JPanel p3 = new JPanel(new GridLayout(1,2));	// 아이피 버튼 + textfield +포트 버튼 + textfield
+		JPanel p4 = new JPanel(new BorderLayout());		// 위쪽 버튼 textfield 전체		
+		JPanel p5 = new JPanel(new BorderLayout());		// 메시지 전송 창 + 전송 버튼
+		JPanel p6 = new JPanel(new BorderLayout());		// 대화명 변경 라벨 + 변경 textfield
+		JPanel p71 = new JPanel(new GridLayout(1,2));	// 버튼 2개(서버로그, 이미지 배경 변경)
+		JPanel p7 = new JPanel(new GridLayout(3,1));	// 대화명변경 버튼 + 대화명	변경창 + 버튼2개		
+		JPanel p8 = new JPanel(new BorderLayout());		// user list + 대화명변경 버튼 + 대화명	변경창 + 버튼2개	
 
 		p1.add("West",new JLabel("  IP  "));
 		p1.add("Center",tfIP = new JTextField(15));
@@ -219,15 +228,17 @@ public class ChatClient {
 		btn1.addActionListener(listener);
 		p4.add("Center",p3);
 		p4.add("East",btn1);
-		///////////////////////////////////////위쪽 아래쪽
+		
+		///////////////////////////////////////위쪽 마무리 아래쪽 시작
 		p5.add("Center",tfText = new JTextField());
 		tfText.setActionCommand("B"); // enter로 action command 값 줌
 		tfText.addActionListener(listener); // enter로 action command 값 줌
 		p5.add("East",btn2 = new JButton("Send"));
 		btn2.setEnabled(false);
 		btn2.setActionCommand("B");
-		btn2.addActionListener(listener);		
-
+		btn2.addActionListener(listener);	
+		
+		//////////////////////////////////////아래쪽 마무리 오른쪽 시작
 		p6.add("West", new JLabel(" NickName "));
 		p6.add("Center",tfName = new JTextField(10));
 
@@ -245,8 +256,6 @@ public class ChatClient {
 		btnName.addActionListener(listener);
 
 		p7.add( p6);
-
-
 
 		p8.add("South", p7);
 		model = new DefaultListModel<String>();

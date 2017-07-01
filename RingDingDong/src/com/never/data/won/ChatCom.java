@@ -61,14 +61,15 @@ public class ChatCom implements Runnable{
 			serverThread.sendExceptSelf(type, name, hello,this);//다른 user에게 사용자 입장을 알리기 위한 전달
 			dos.writeUTF(String.format("# [%s] %s", name, hello));//입장한 사용자에게 입장 내용 전달
 			dos.flush();
+			//사용자 리스트 목록 구해서 보내기
+			serverThread.sendUserList(this);
 			myCount++;											//arrayList에 이름 저장 시 같은 자리 중복 회피 위한 값 변경.(유효한지 모르겠음...;;)
 			server.addLog(userName.toString());					//서버에 현재 접속해 있는 유저 목록 띄움
 		} catch (IOException e) {
 			server.addLog("ChatCom: run(); "+e);
 		}
 		
-		//사용자 리스트 목록 구해서 보내기
-		serverThread.sendUserList(this);
+		
 
 		onAir = true;
 		String tmp;
@@ -97,6 +98,8 @@ public class ChatCom implements Runnable{
 					serverThread.sendAllmember(type, name, tmp);	
 					name = nameCheck(tmp);		
 					userName.set(myCount, name);
+					dos.writeUTF(name);
+					dos.flush();
 					break;
 				
 				//서버에서 접속이 끊길 떄 protocol	

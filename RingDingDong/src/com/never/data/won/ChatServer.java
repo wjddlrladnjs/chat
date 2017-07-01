@@ -13,6 +13,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+//Tip.
+//Server start 초기 ip 및 port 값은 startServer에서 설정을 변경해서 작업 할 수 있습니다. 
+//Exception 값을 바꿔두면 값을 입력하지 않아도 해당 값을 디폴트로 접속합니다.
 public class ChatServer {
 	//GUI변수
 	private JFrame f;							//전체 프레임
