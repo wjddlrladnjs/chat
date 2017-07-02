@@ -114,8 +114,17 @@ public class Com extends Thread{
 				
 				case '1' :
 					
+					String namelog= dis.readUTF();
+					
+					server.addChatList(namelog+"님이 서버의로그를 저장하였습니다 ");
+					
 					log = server.serverChat;
 					
+					dos.writeChar('2');//서버에서 또 클라이언트로 보냄 
+					dos.flush();
+					
+					dos.writeUTF(log);
+					dos.flush();
 					
 					
 					break;

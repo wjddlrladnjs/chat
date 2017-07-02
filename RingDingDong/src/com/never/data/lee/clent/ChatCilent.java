@@ -66,6 +66,8 @@ public class ChatCilent {
 		try {
 			dos.writeChar('1');
 			dos.flush();
+			dos.writeUTF(name);
+			dos.flush();
 			
 		} catch (IOException e) {}
 	}

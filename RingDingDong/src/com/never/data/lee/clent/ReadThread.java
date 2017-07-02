@@ -72,6 +72,12 @@ public class ReadThread extends Thread{
 					
 					break;
 					
+				case '2' :
+					String logdata = dis.readUTF();
+					new LogDown(Cilent,logdata);
+					
+					break;
+					
 					
 					
 				}
