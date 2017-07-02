@@ -110,50 +110,49 @@ public class MultiChatClient {
 	void changeBgrImg(){
 		////// 연결된상태인지 검증하자 <-join버튼이랑 같이 처리해주면 되는거 아니야?
 		
-		String pathName = "C:\\Users\\Ashran\\Pictures\\";
-		String fName = "00000000000000000000000000.jpg";
-		
-		file = new File(pathName, fName);
-		int lngth = (int) file.length();
-		String name = file.getName();
-		
-		
-		addChatAlert(String.format("파일길이: %d, 파일이름: %s, 파일null여부: %b", lngth, name,
-				file.exists()));
-		
-		
-		
+//		String pathName = "D:\\gitFile\\";
+//		String fName = "bamboospear.png";
+//		
+//		file = new File(pathName, fName);
+//		int lngth = (int) file.length();
+//		String name = file.getName();
+//		
+//		
+//		addChatAlert(String.format("파일길이: %d, 파일이름: %s, 파일null여부: %b", 
+//				lngth, name, file.exists()));
+//		
+//		
+//		sendImageFile(file, lngth);
 		
 		//========== 테스트 위해 밑에 다 지움 ==============
 		
-//		fc = new JFileChooser(".");
-//		
-//		//fc.setAcceptAllFileFilterUsed(false);
-//		FileFilter ff = new FileNameExtensionFilter("Image files", "jpg", "png");
-//        fc.addChoosableFileFilter(ff);
-//		
-//		int returnVal = fc.showOpenDialog(f);
-//		
-//		int tlength = (int) fc.getSelectedFile().length();
-//		System.out.println("tlength: " + tlength);
-//		
-//		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
-//			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
-////			System.out.println(file.length());		//왜안되지?
-//			System.out.println(file.getName());
-//		}
-//		
-//		if(file == null){	//null이면 소용없게.
-//			return;
-//		}
-//		
-//		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
-//		
-//		//서버로 보내자
-//		sendImageFile(file, tlength);
-//		
-//		//나의 배경화면을 바꾼다
-//		//setBgrImageAs(file);
+		fc = new JFileChooser(".");
+		
+		//fc.setAcceptAllFileFilterUsed(false);
+		FileFilter ff = new FileNameExtensionFilter("Image files", "jpg", "png");
+        fc.addChoosableFileFilter(ff);
+		
+		int returnVal = fc.showOpenDialog(f);
+		
+		int tlength = (int) fc.getSelectedFile().length();
+		System.out.println("tlength: " + tlength);
+		
+		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
+			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
+			if(file == null){	//null이면 소용없게.
+				return;
+			}
+			System.out.println(tlength);		//왜안되지?
+			System.out.println(file.getName());
+		}
+		
+		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
+		
+		//서버로 보내자
+		sendImageFile(file, tlength);
+		
+		//나의 배경화면을 바꾼다
+		//setBgrImageAs(file);
 		
 	}
 	
@@ -163,8 +162,9 @@ public class MultiChatClient {
 		String fileName = "";
 		byte[] brr = null; //데이타가 들어갈 배열
 		try {
-			fos = new FileOutputStream(file);
+			fis = new FileInputStream(file);
 			//파일이 정상적으로 들어왓으면 length를구한다
+			addChatAlert("파일이 인풋스트림에 들어왔습니다.");
 			length = tempLength;
 			System.out.println("length:" + length);
 			
@@ -179,7 +179,8 @@ public class MultiChatClient {
 //			DataInputStream dis = new DataInputStream(is);
 			
 			//여기가 쓰레드가 되어야하는부분 아닌가?
-			dis.readFully(brr, 0, length);	//꽉찰때까지 읽는다
+			fis.read(brr, 0, length);	//꽉찰때까지 읽어서 brr에 저장
+			addChatAlert("FIS가 배열 brr에 파일 길이만큼 저장했습니다.");
 			
 			//프로토콜 보낸다
 			dos.writeChar('i');
@@ -188,8 +189,8 @@ public class MultiChatClient {
 			dos.flush();
 			dos.writeInt(length);
 			dos.flush();
-			fos.write(brr, 0, brr.length);	//쓴다
-			fos.flush();
+			dos.write(brr, 0, brr.length);	//쓴다
+			dos.flush();
 			
 			addChatAlert(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냅니다..",
 					fileName, length));
@@ -404,7 +405,7 @@ public class MultiChatClient {
 		//north-grid
 		JLabel lb = new JLabel(" IP ");
 		lb.setFont(new Font("Bitstream Vera Sans Mono", Font.BOLD, 15));
-		tfIP = new JTextField("192.168.205.146");
+		tfIP = new JTextField("192.168.219.100");
 		tfIP.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 15));
 		tfIP.setBackground(new Color(233, 244, 255));
 		tfIP.setBorder(BorderFactory.createLineBorder(new Color(183, 194, 205), 5, true));

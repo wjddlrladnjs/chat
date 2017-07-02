@@ -16,6 +16,17 @@ public class ReaderThread extends Thread{
 		this.client = client;
 		this.dis = dis;	//야! 상식적으로 생각해봐! 생성자 인자받았는데 여서만쓰겠냐 아님 딴데서도 갖다쓰겠냐? 엉?
 	}
+	public synchronized String getFileName(){
+		String temp = "";
+		
+		try{
+			temp = dis.readUTF();
+		}catch(IOException e){
+			client.addChatAlert("@@ 읽기가 올바르지 않습니다: @@" + e);
+		}
+		
+		return temp;
+	}
 	
 	public synchronized int getFileLength(){
 		int tempLength = 0;
@@ -106,6 +117,8 @@ public class ReaderThread extends Thread{
 					
 					//이미지
 				case 'i':
+					client.addChatAlert("서버에서 프로토콜 i를 받았습니다. ");
+					
 					processor = new ImageProcess(client, this);
 					processor.start();
 					

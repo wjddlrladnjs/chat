@@ -44,7 +44,8 @@ public class BgrImage extends Thread{
 		//이제 byte에서 파일로 변환해야겠지?
 		while(isRunning){
 			System.out.println("BgrImage들어왔어!");
-			thread.sendImageData2All('i', fileName, fileLength, imgData, comm);
+			thread.sendImageData2All('i', fileName, fileLength, imgData);
+//			thread.sendImageData2All('i', fileName, fileLength, imgData, comm);
 			server.addChatAlert(fileName + " 파일을 각 클라이언트로 보냄");
 			System.out.println("파일 클라들한테 보냈어!");
 			isRunning = false;	//다 했으면 쓰레드 종료

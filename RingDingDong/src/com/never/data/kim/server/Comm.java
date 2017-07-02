@@ -79,6 +79,7 @@ public class Comm extends Thread{
 	
 	public synchronized byte[] readImageData(int dataLength){
 		byte[] tempImageData = null;
+		System.out.println("클라가 준 dataLength: " + dataLength);
 		
 		try{
 			dis.readFully(tempImageData, 0, dataLength);
@@ -100,10 +101,12 @@ public class Comm extends Thread{
 	}
 
 	//이미지 byte배열 보내기
-	public synchronized void sendImageData(char protocol, int imgSize, byte[] imgData){
+	public synchronized void sendImageData(char protocol, String fileName, int imgSize, byte[] imgData){
 		try{
 			dos.writeChar(protocol);	//프로토콜보내고 그담에메세지보내
 			dos.flush();	//live한 data들이 좀 빨리감. 없으면 살짝 딜레이생김
+			dos.writeUTF(fileName);
+			dos.flush();
 			dos.writeInt(imgSize);
 			dos.flush();
 			dos.write(imgData);
