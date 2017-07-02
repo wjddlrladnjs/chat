@@ -55,6 +55,8 @@ public class BgrImage extends Thread{
 	}
 	
 	public void varDistribute(){	//length와 data 얻어오는 메솓
+		server.addChatAlert("프로토콜 다음으로 정보 읽는다");
+		
 		fileName = comm.readFileName();
 		fileLength = comm.readLength();
 		imgData = comm.readImageData(fileLength);
