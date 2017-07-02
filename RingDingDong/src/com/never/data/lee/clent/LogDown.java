@@ -13,7 +13,6 @@ public class LogDown extends Thread{
 		
 		
 		
-		
 	}
 
 	
