@@ -22,11 +22,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-//Tip.
-//Client start 초기 ip 및 port 값은 startClient에서 설정을 변경해서 작업 할 수 있습니다. 
-//Exception 값을 바꿔두면 값을 입력하지 않아도 해당 값을 디폴트로 접속합니다.
+
 public class ChatClient {
-	
 	//GUI 변수
 	private JFrame f;
 	private JTextField tfIP, tfPort, tfName, tfText;
@@ -36,8 +33,8 @@ public class ChatClient {
 	private DefaultListModel<String> model;
 	//네트워크 변수
 	private Socket socket;
-	DataInputStream dis;
-	DataOutputStream dos;
+	private DataInputStream dis;
+	private DataOutputStream dos;
 
 	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
@@ -57,7 +54,7 @@ public class ChatClient {
 			}
 		}		
 	};
-	
+
 	//client 시작. 입력오류에 따른 exception은 port에 숫자가 아닌 다른 입력이 오거나 ip와 port 중 빈 값이 있을 때만 발생한다.
 	//ip에 string은 넣지만 ip 주소 이외의 값을 넣거나 port에 숫자는 넣지만 port 규정에 어긋나는 값을 넣을 경우 
 	//exception은 발생하지 않고 client와 server 모두(?) 죽을 수 있으니 유의하길.
@@ -70,13 +67,13 @@ public class ChatClient {
 			commenceClient(ipAddr, port);			
 		}catch(NumberFormatException e){
 			addLog("Client will connect with default into...");
-			commenceClient("192.168.0.4",12345);	//초기값 설정		
+			commenceClient("192.168.0.14",12345);	//초기값 설정		
 		}catch(NullPointerException e){
 			addLog("Client will connect with default into...");
-			commenceClient("192.168.0.4",12345);			
+			commenceClient("192.168.0.14",12345);			
 		}
 	}
-	
+
 	//Client 시작을 위한 메소드
 	void commenceClient(String ipAddr, int port){
 		try {
@@ -85,21 +82,19 @@ public class ChatClient {
 			dos = new DataOutputStream(socket.getOutputStream());
 			btn1.setEnabled(false);
 			btn2.setEnabled(true);
-			dos.writeChar('A');
-			dos.flush();
 			String name = nickName();
 
 			dos.writeUTF(name);
 			String hello = dis.readUTF();
 			addLog(hello);
-			new ChatReadThread(this).start();
+			new ChatReadThread(this, dis).start();
 		} catch (UnknownHostException e) {
 			addLog("Socket not connect b/c "+e);
 		} catch (IOException e1) {
 			addLog("Socket not connect b/c "+e1);
 		}
 	}
-	
+
 	//서버로 메세지 전송 메소드
 	void sendMessage(){
 		try{
@@ -108,7 +103,7 @@ public class ChatClient {
 				dos.writeChar('M');
 				dos.writeUTF(text);
 				dos.flush();
-				
+
 				tfText.setText("");				
 			}
 		}catch(IOException e){
@@ -116,7 +111,8 @@ public class ChatClient {
 			tfText.setText("");
 		}
 	}
-	
+
+
 	//이름 변경 메소드
 	void changeNickName(){
 		try{
@@ -126,9 +122,8 @@ public class ChatClient {
 				dos.writeChar('N');
 				dos.writeUTF(text);
 				dos.flush();
-
-				text = dis.readUTF();
-				setChatWindowName(text);
+				//				text = dis.readUTF();
+				//				setChatWindowName(text);
 				tfName.setText("");				
 			}
 		}catch(IOException e){
@@ -136,31 +131,30 @@ public class ChatClient {
 			tfName.setText("");
 		}
 	}
-	
-	//update User
-	public void updataUser(String oldName, String newName){
+
+	//참여한 유저 목록
+	public void addUserList(String[] name){
+		for(String nameInList : name){
+			int idx = model.indexOf(nameInList);
+			if(idx != -1){
+				model.setElementAt(nameInList, idx);
+			}else{
+			model.addElement(nameInList);
+			}
+		}
+	}
+
+	public void updateUser(String oldName,String newName){
 		int idx = model.indexOf(oldName);
 		if(idx != -1){
 			model.setElementAt(newName, idx);
 		}
 	}
 
-	//exited User remove from list
-	public void deleteUser(String name){
-		model.removeElement(name);
-	}
+	//	public void changeUser(String[] names){
+	//		model.size()
+	//	}
 
-	//Add user list
-	public void addUser(String name){
-		model.addElement(name);
-	}
-
-	//user list
-	public void showUserList(String[] nameList){
-		for(String name : nameList){
-			model.addElement(name);
-		}
-	}	
 
 	//user의 window창 종료로 인한 퇴장시 적용 메소드
 	void exitClient(){
@@ -182,7 +176,7 @@ public class ChatClient {
 		String nickName = "";
 		nickName = tfName.getText();
 		if(nickName.equals(null) || nickName.equals(""))	nickName = "User";
-		setChatWindowName(String.format("Client[%s] Screen", nickName));
+		//		setChatWindowName(String.format("Client[%s] Screen", nickName));
 		return nickName;
 	}
 
@@ -196,7 +190,6 @@ public class ChatClient {
 		f.setTitle(String.format("Chatting Client[ %s ]", msg));
 	}
 
-	//생성자
 	public ChatClient() {
 		initGUI();
 	}
@@ -228,7 +221,7 @@ public class ChatClient {
 		btn1.addActionListener(listener);
 		p4.add("Center",p3);
 		p4.add("East",btn1);
-		
+
 		///////////////////////////////////////위쪽 마무리 아래쪽 시작
 		p5.add("Center",tfText = new JTextField());
 		tfText.setActionCommand("B"); // enter로 action command 값 줌
@@ -237,7 +230,7 @@ public class ChatClient {
 		btn2.setEnabled(false);
 		btn2.setActionCommand("B");
 		btn2.addActionListener(listener);	
-		
+
 		//////////////////////////////////////아래쪽 마무리 오른쪽 시작
 		p6.add("West", new JLabel(" NickName "));
 		p6.add("Center",tfName = new JTextField(10));
