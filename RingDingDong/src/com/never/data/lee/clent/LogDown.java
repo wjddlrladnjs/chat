@@ -52,7 +52,7 @@ public class LogDown extends Thread{
 			}
 			}
 		}
-		Cilent.addChatList("다운로드성공");
+		Cilent.addChatList("다운로드완료   위치 :  c:\\chatlog\\logDownlod");
 		
 	}
 
