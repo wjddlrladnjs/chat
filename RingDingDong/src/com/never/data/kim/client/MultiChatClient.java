@@ -16,8 +16,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
@@ -46,6 +47,8 @@ public class MultiChatClient {
 	Image img;
 	File file;
 	
+	//InputStream is = null;
+	//OutputStream os = null;
 	FileInputStream fis = null;
 	FileOutputStream fos = null;
 	
@@ -85,14 +88,10 @@ public class MultiChatClient {
 	};
 	
 	void changeBgrImg(){
-		
 		////// 연결된상태인지 검증하자 <-join버튼이랑 같이 처리해주면 되는거 아니야?
-		
 		//JOptionPane.showConfirmDialog(f, "");
 		
 		fc = new JFileChooser(".");
-		//fc.set
-		
 		
 		int returnVal = fc.showOpenDialog(f);
 		file = null;
@@ -110,17 +109,42 @@ public class MultiChatClient {
 		//서버로 보내자
 		sendImageFile(file);
 		
-		
 	}
 	
 	void sendImageFile(File file){
+		int data = 0;	//데이타의 크기
+		int length = 0;	//파일의 크기
+		byte[] brr = null; //데이타가 들어갈 배열
 		try {
 			fos = new FileOutputStream(file);
 			
+			//파일이 정상적으로 들어왓으면 length를구한다
+			length = (int) file.length();
+			brr = new byte[length];	//length만큼 byte배열 잡아줌
+			
+//			DataInputStream dis = new DataInputStream(is);
+			
+			//여기가 쓰레드가 되어야하는부분 아닌가?
+			dis.readFully(brr, 0, length);	//꽉찰때까지 읽는다
+			
+			//프로토콜 보낸다
+			dos.writeChar('i');
+			dos.flush();
+			dos.writeInt(length);
+			dos.flush();
+			fos.write(brr, 0, brr.length);	//쓴다
+			fos.flush();
+			
 		} catch (FileNotFoundException e) {
 			addChatAlert("파일 출력 에라: " + e);
+		} catch (IOException e) {
+			addChatAlert("I/O 에러: " + e);
 		}
 		
+		//여기서 서버로 보내는 프로토콜
+		//dis.writeChar('i');
+		//dis.writeInt(length);
+		//fos.write(brr);
 		
 	}
 	
@@ -272,10 +296,6 @@ public class MultiChatClient {
 			dos.flush(); //읽어오는건 받는거랑 무관하게 병행해서 받아오느놈이 있어야되겠지? 쓰레드지? 그지? 내 말 맞지?
 			
 		}catch(IOException e){}
-
-		
-		
-		
 		
 
 		

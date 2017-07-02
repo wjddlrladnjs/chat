@@ -2,6 +2,7 @@ package com.never.data.kim.client;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 public class ReaderThread extends Thread{
 	
@@ -63,6 +64,7 @@ public class ReaderThread extends Thread{
 				case 'D':
 					msg = dis.readUTF();
 					client.deleteUser(msg);
+					
 					break;
 				case 'U':
 					msg = dis.readUTF();
