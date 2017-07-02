@@ -19,8 +19,8 @@ public class ClientReadThread implements Runnable{
 	@Override
 	public void run() {
 
-		String msg = "";
 		char protocol = ' ';
+		String msg = "";
 		int command = -1;
 		String clientName = "";
 		// 예외가 발행해도 종료하지 않는다.

@@ -123,8 +123,8 @@ public class ServerCom implements Runnable {
 					// 일반적인 메시지 처리.
 					case 'M' :
 						msg = dis.readUTF();
-						server.appendServerLog(clientIP + " : " + msg);
-						serverThread.sendAllMessage(protocol, String.format("%s [%s] : %s",ChatServer.serverTime, clientName, msg));
+						server.appendServerLog(String.format( "/%s/[%s] : %s",clientIP, clientName, msg ));
+						serverThread.sendAllMessage(protocol, clientName, msg);
 						break;
 					// 클라이언트 종료.
 					case 'X' :
@@ -156,7 +156,7 @@ public class ServerCom implements Runnable {
 						String tagetClient = dis.readUTF();
 						msg = dis.readUTF();
 						server.appendServerLog(String.format("귓속말 : %s -> %s : %s", clientName, tagetClient, msg));
-						serverThread.sendWhisperMessage(tagetClient, msg);
+						serverThread.sendWhisperMessage(tagetClient, String.format("%s(%s님 귓속말) : %s" ,ChatServer.serverTime, clientName, msg));
 						break;
 						
 					}
@@ -168,15 +168,15 @@ public class ServerCom implements Runnable {
 			} // while end
 			// 열려있던 객체들을 다 닫아주자.
 			if( s != null ) {
-				try {s.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {s.close(); s = null ;} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			if( dis != null ) {
-				try {dis.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {dis.close(); dis = null; } catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			if( dos != null ) {
-				try {dos.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {dos.close(); dos = null; } catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			onAir = false;
@@ -184,15 +184,15 @@ public class ServerCom implements Runnable {
 		} catch( Exception e ) {
 			server.appendServerLog("서버 Com 애러" + e.toString());
 			if( s != null ) {
-				try {s.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {s.close(); s = null; } catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			if( dis != null ) {
-				try {dis.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {dis.close(); dis = null; } catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			if( dos != null ) {
-				try {dos.close();} catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
+				try {dos.close(); dos = null; } catch (IOException e1) {server.appendServerLog("서버 I/O 애러" + e1.toString());
 				}
 			}
 			// 문제가 생기면 열려있는 객체를 닫고 쓰레드를 종료한다.
