@@ -79,11 +79,26 @@ public class ServerThread implements Runnable {
 		}
 		
 	}
+	// 전체 메시지 필터링 오버로드.
+	public void sendAllMessage( char protocol,String clientName, String msg ) {
+		
+		String temp = "당신";
+		String reMsg = "";
+		for( ServerCom com : serverComList ) {
+			if( com.getClientName().equals(clientName) ){
+				reMsg = String.format("%s[%s] : %s", ChatServer.serverTime, temp, msg);
+			}else {
+				reMsg = String.format("%s[%s] : %s", ChatServer.serverTime, clientName, msg);
+			}
+			com.sendMessage( protocol, reMsg );
+		}
+		
+	}
 	// 전체 메시지를 보내지만 나를 제외한 나머지에게 보낼 때 쓰는 오버로드된 메서드.
-	public void sendAllMessage( char protocol, String msg, ServerCom itsme ) {
+	public void sendAllMessage( char protocol, String msg, ServerCom itsMe ) {
 		
 		for( ServerCom com : serverComList ) {
-			if(com != itsme ) {
+			if(com != itsMe ) {
 				com.sendMessage( protocol, msg );
 			}
 		}
@@ -145,7 +160,7 @@ public class ServerThread implements Runnable {
 			}
 			
 		}// while end
-		
+		server.appendServerLog(Thread.currentThread().getName() + ": 스레드 종료");
 	}
 
 	public ChatServer getServer() {

@@ -14,6 +14,7 @@ import java.net.Socket;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -150,6 +151,16 @@ public class ChatClient {
 	}
 	// 닉네임 변경을 서버에 알린다.
 	private void sendNickname(String nickname) {
+
+		String msg = tfNickname.getText();
+		
+		if( msg.length() == 0 ) {
+			return;
+		}
+		if(  s == null || dis == null || dos == null ) {
+			appendClientLog("서버와 연결되어 있지 않습니다.");
+			return;
+		}
 		
 		try {
 			dos.writeChar('R');
@@ -169,6 +180,11 @@ public class ChatClient {
 		String tagetClient = clientList.getSelectedValue();
 		
 		if( msg.length() == 0 ) {
+			return;
+		}
+		// 연결 안 된 상태에서 귓속말 처리.
+		if( s == null || dis == null || dos == null ) {
+			appendClientLog("서버와 연결되어 있지 않습니다.");
 			return;
 		}
 		// 만약에 리스트에 선택된 사람이 있다면 귓속말을 한다.
@@ -261,6 +277,7 @@ public class ChatClient {
 			tfPort.setEnabled(!state);
 			tfIP.setEnabled(!state);
 			tfMessage.grabFocus();
+			
 		} else {
 			btnConnect.setText("접속");
 			btnConnect.setBackground(Color.GREEN);
@@ -270,7 +287,6 @@ public class ChatClient {
 			tfIP.grabFocus();
 		}
 	}
-	
 	// 클라 종료시 호출된 메서드.
 	public void doExitEvent(int state) {
 		
@@ -284,15 +300,15 @@ public class ChatClient {
 			appendClientLog("클라 종료 애러" + e.toString());
 		} finally {
 			if( s != null ) {
-				try {s.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				try {s.close(); s = null; } catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
 				}
 			}
 			if( dis != null ) {
-				try {dis.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				try {dis.close(); dis = null;} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
 				}
 			}
 			if( dos != null ) {
-				try {dos.close();} catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
+				try {dos.close(); dos = null; } catch (IOException e) {appendClientLog("클라 I/O 닫기 애러" + e.toString());
 				}
 			}
 		}
@@ -387,8 +403,31 @@ public class ChatClient {
 		// main.center.east.center
 		cPanel.add(cPanelEast, "East");
 		cPanelEast.add(cPanelEastCenter, "Center");
-			// list 부분
+			// list 부분 - unselected 구현이라 쓰고 복사라고 읽는다.
 		clientList = new JList<String>();
+		clientList.setSelectionModel(new DefaultListSelectionModel() {
+			private static final long serialVersionUID = -1282953634250437799L;
+			public void setSelectionInterval(int index0, int index1) {
+				if (index0 == index1) {
+					if (isSelectedIndex(index0)) {
+						removeSelectionInterval(index0, index0);
+						return;
+					}
+				}
+				super.setSelectionInterval(index0, index1);
+			}
+			public void addSelectionInterval(int index0, int index1) {
+				if (index0 == index1) {
+					if (isSelectedIndex(index0)) {
+						removeSelectionInterval(index0, index0);
+						return;
+					}
+					super.addSelectionInterval(index0, index1);
+				}
+			}
+
+		});
+
 		model = new DefaultListModel<String>();
 		clientList.setModel(model);
 		clientList.setFixedCellWidth(130);
@@ -448,7 +487,7 @@ public class ChatClient {
 		f.setVisible(true);
 
 	}
-	
+
 	public static void main(String[] args) {
 
 		new ChatClient();

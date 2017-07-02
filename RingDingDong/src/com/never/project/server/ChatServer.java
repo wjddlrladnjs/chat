@@ -25,6 +25,8 @@ import javax.swing.border.TitledBorder;
 public class ChatServer {
 
 	// 다른 클래스에서 접근 하기 위해 맴버 변수로 선언.
+	public static final int SERVER_STATE_STOP = 11;
+	public static final int SERVER_STATE_EXIT = 44;
 	private JFrame f;
 	private JPanel mainPanel, nPanel, cPanel, sPanel, sPanelCenter, sPanelSouth;
 	private JTextArea taServerLog;
@@ -46,7 +48,7 @@ public class ChatServer {
 				btnStop.grabFocus();
 				break;
 			case "stopServer":
-				stopServer();
+				stopServer(SERVER_STATE_STOP);
 				break;
 			case "F1":
 				getServerIP();
@@ -62,20 +64,21 @@ public class ChatServer {
 		getServerIP();
 	}
 	// 서버를 정지하거나 껐을 때 호출.
-	private void stopServer() {
+	private void stopServer(int state) {
 		
 		String msg = String.format("%s# 서버가 정지되었습니다.", serverTime);
-		if( serverThread != null ) {
+		
+		if( state == SERVER_STATE_STOP ) {
 			char protocol = 'Z';
 			int command = -4;
 			serverThread.sendAdminMessage( protocol, command, msg );
 			serverThread.stopServer();
-		} else {
+			serverThread = null;
+		} else if( state == SERVER_STATE_EXIT) {
 			System.exit(0);
 		}
 		
 	}
-	
 	// 시간을 남겨보자.
 	public void setServerTime(){
 	
@@ -85,7 +88,6 @@ public class ChatServer {
 		serverTime = "["+time+"]";
 		
 	}
-	
 	// server log 메시지 띄우는 메서드.
 	public void appendServerLog( String msg ) {
 		setServerTime();
@@ -106,14 +108,12 @@ public class ChatServer {
 		}  
 		
 	}
-
 	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
 	public void controlStopButton(boolean state) {
 		btnStart.setEnabled(!state);
 		btnStop.setEnabled(state);
 		tfPort.setEnabled(!state);
 	}
-
 	// start 버튼 눌렸을 때 동작할 메서드.
 	private void StartServer() {
 		
@@ -137,19 +137,18 @@ public class ChatServer {
 				return;
 			} 
 		}
-		// 입력된 포트가 정상일 때 진행.
-		tfPort.setEnabled(false);
+
 		serverThread = new ServerThread( this );
 		new Thread(serverThread).start();
 		
 	}
-
+	// GUI 초기화.
 	private void initGUI() {
 		
 		f = new JFrame("Chat Server");
 		f.setBounds(0, 0, 500, 600);
 		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {stopServer();}
+			public void windowClosing(WindowEvent e) {stopServer(SERVER_STATE_EXIT);}
 		});
 		
 		mainPanel = new JPanel( new BorderLayout() );
@@ -214,13 +213,12 @@ public class ChatServer {
 		f.setVisible(true);
 		
 	}
-	
+	// main method
 	public static void main(String[] args) {
 
 		new ChatServer();
 		
 	}
-
 	
 	// 다른 클래스에서 맴버에 접근하기 위한 getter와 setter.
 	public JFrame getF() {
