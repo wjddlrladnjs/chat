@@ -8,6 +8,7 @@ public class LogDown extends Thread{
 		this.Cilent = Cilent;
 	}
 
+	
 	@Override
 	public void run() {
 		
