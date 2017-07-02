@@ -22,7 +22,7 @@ public class ReaderThread extends Thread{
 		try{
 			temp = dis.readUTF();
 		}catch(IOException e){
-			client.addChatAlert("@@ 읽기가 올바르지 않습니다: @@" + e);
+			client.addChatAlert("@@ UTF 읽기가 올바르지 않습니다: @@" + e);
 		}
 		
 		return temp;
@@ -34,7 +34,7 @@ public class ReaderThread extends Thread{
 		try {
 			tempLength = dis.readInt();
 		} catch (IOException e) {
-			client.addChatAlert("@@ 읽기가 올바르지 않습니다: @@" + e); 
+			client.addChatAlert("@@ 파일크기 읽기가 올바르지 않습니다: @@" + e); 
 		}
 		
 		return tempLength;
@@ -44,9 +44,9 @@ public class ReaderThread extends Thread{
 		byte[] tempBytes = null;
 		
 		try{
-			dis.read(tempBytes, 0, fileLength);
+			dis.read(tempBytes, 0, fileLength - 1);
 		}catch(IOException e){
-			client.addChatAlert("@@ 읽기가 올바르지 않습니다: @@" + e);
+			client.addChatAlert("@@ 파일 바이트 읽기가 올바르지 않습니다: @@" + e);
 		}
 		
 		return tempBytes;

@@ -83,7 +83,7 @@ public class Comm extends Thread{
 		
 		try{
 			tempImageData = new byte[dataLength];
-			dis.readFully(tempImageData, 0, dataLength);
+			dis.readFully(tempImageData, 0, dataLength - 1);
 		}catch(IOException e){
 			server.addChatAlert("reveive error: " + e);
 		}
