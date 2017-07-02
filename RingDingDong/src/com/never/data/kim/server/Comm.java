@@ -87,6 +87,17 @@ public class Comm extends Thread{
 		}
 		return tempImageData;
 	}
+	
+	public synchronized String readFileName(){
+		String tempName = "";
+		
+		try{
+			tempName = dis.readUTF();
+		}catch(IOException e){
+			server.addChatAlert("reveive error: " + e);
+		}
+		return tempName;
+	}
 
 	//이미지 byte배열 보내기
 	public synchronized void sendImageData(char protocol, int imgSize, byte[] imgData){
@@ -194,12 +205,16 @@ public class Comm extends Thread{
 				// 이미지
 				case 'i':
 				//클라서 서버로 보내는 프로토콜
-				//dis.writeChar('i');
-				//dis.writeInt(length);
+				//dos.writeChar('i');
+				//dos.writeUTF(fileName);
+				//dos.writeInt(length);
 				//fos.write(brr);
-					bgrImage = new BgrImage(server, thread, this); 
+					server.addChatAlert("프로토콜 i를 받았습니다.");
+//					bgrImage = new BgrImage(server, thread); 
+					bgrImage = new BgrImage(server, thread, this);
 					
 					bgrImage.start(); //데이터 파일로 변환한다음 각각 클라에 쏘는거
+					server.addChatAlert("이미지 보내기용 쓰레드를 생성합니다.");
 					
 					break;
 				}

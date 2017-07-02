@@ -129,7 +129,7 @@ public class MultiChatServer {
 		
 		//Center panel
 		taOutput = new JTextArea();
-		taOutput.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
+		//taOutput.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
 		taOutput.setBackground(new Color(240, 254, 245));
 		taOutput.setEditable(false);
 		//taOutput.setEnabled(false);

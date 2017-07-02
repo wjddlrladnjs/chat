@@ -17,6 +17,7 @@ public class BgrImage extends Thread{
 	File file;
 	byte[] imgData;// imgFile;
 	int fileLength;
+	String fileName;
 	boolean isRunning = false; 
 	
 	//I/O 멤버변수들
@@ -42,9 +43,10 @@ public class BgrImage extends Thread{
 		
 		//이제 byte에서 파일로 변환해야겠지?
 		while(isRunning){
-			
-			thread.sendImageData2All('i', fileLength, imgData, comm);
-			server.addChatAlert("이미지를 클라이언트로 보냄");
+			System.out.println("BgrImage들어왔어!");
+			thread.sendImageData2All('i', fileName, fileLength, imgData, comm);
+			server.addChatAlert(fileName + " 파일을 각 클라이언트로 보냄");
+			System.out.println("파일 클라들한테 보냈어!");
 			isRunning = false;	//다 했으면 쓰레드 종료
 			
 		}//while문 끝
@@ -52,7 +54,11 @@ public class BgrImage extends Thread{
 	}
 	
 	public void varDistribute(){	//length와 data 얻어오는 메솓
+		fileName = comm.readFileName();
 		fileLength = comm.readLength();
 		imgData = comm.readImageData(fileLength);
+		
+		server.addChatAlert(String.format
+				("받은 파일명: %s, 파일 크기: %d", fileName, fileLength));
 	}
 }

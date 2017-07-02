@@ -49,13 +49,13 @@ public class ServerThread implements Runnable{
 	}
 	
 	
-	public synchronized void sendImageData2All(char protocol, int fileLength, byte[] brr){
+	public synchronized void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
 		for(Comm comm : commList){
 			comm.sendImageData(protocol, fileLength, brr);
 		}
 	}
 	
-	public synchronized void sendImageData2All(char protocol, int fileLength, byte[] brr, Comm self){
+	public synchronized void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr, Comm self){
 		for(Comm comm : commList){
 			if(comm != self){
 				comm.sendImageData(protocol, fileLength, brr);

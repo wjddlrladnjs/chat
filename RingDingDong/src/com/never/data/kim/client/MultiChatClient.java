@@ -115,10 +115,13 @@ public class MultiChatClient {
 		fc.setFileFilter(filter);
 		
 		int returnVal = fc.showOpenDialog(f);
-		file = null;
+		
+		int tlength = (int) fc.getSelectedFile().length();
+		System.out.println("tlength: " + tlength);
 		
 		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
 			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
+			System.out.println(file.length());
 		}
 		
 		if(file == null){	//null이면 소용없게.
@@ -128,21 +131,30 @@ public class MultiChatClient {
 		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
 		
 		//서버로 보내자
-		sendImageFile(file);
+		sendImageFile(file, tlength);
 		
 		//나의 배경화면을 바꾼다
 		//setBgrImageAs(file);
 		
 	}
 	
-	void sendImageFile(File file){
+	void sendImageFile(File file, int tempLength){
 		int data = 0;	//데이타의 크기
 		int length = 0;	//파일의 크기
+		String fileName = "";
 		byte[] brr = null; //데이타가 들어갈 배열
 		try {
 			fos = new FileOutputStream(file);
 			//파일이 정상적으로 들어왓으면 length를구한다
 			length = (int) file.length();
+			System.out.println("length:" + length);
+			
+			if(length == 0){	//크기 0이면 리턴
+				addChatAlert("파일 크기가 너무 작거나 파일이 존재하지 않습니다.");
+				return;
+			}
+			
+			fileName = file.getName();
 			brr = new byte[length];	//length만큼 byte배열 잡아줌
 			
 //			DataInputStream dis = new DataInputStream(is);
@@ -153,12 +165,15 @@ public class MultiChatClient {
 			//프로토콜 보낸다
 			dos.writeChar('i');
 			dos.flush();
+			dos.writeUTF(fileName);
+			dos.flush();
 			dos.writeInt(length);
 			dos.flush();
 			fos.write(brr, 0, brr.length);	//쓴다
 			fos.flush();
 			
-			addChatAlert("");
+			addChatAlert(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냅니다..",
+					fileName, length));
 			
 		} catch (FileNotFoundException e) {
 			addChatAlert("파일 출력 에라: " + e);
@@ -167,8 +182,9 @@ public class MultiChatClient {
 		}
 		
 		//여기서 서버로 보내는 프로토콜
-		//dis.writeChar('i');
-		//dis.writeInt(length);
+		//dos.writeChar('i');
+		//dos.writeUTF(fileName);
+		//dos.writeInt(length);
 		//fos.write(brr);
 		
 	}
@@ -413,7 +429,7 @@ public class MultiChatClient {
 		//center
 		taOutput = new JTextArea();
 		taOutput.setBackground(new Color(233, 243, 247));
-		taOutput.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
+		//taOutput.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
 		taOutput.setBorder(BorderFactory.createLineBorder(new Color(212, 189, 199), 5, true));
 		taOutput.setEditable(false);
 		//taOutput.setEnabled(false);
@@ -423,7 +439,7 @@ public class MultiChatClient {
 		list.setModel(model);
 		//model = (DefaultListModel)list.getModel(); //기본으로 있는놈
 		list.setBackground(new Color(232, 224, 215));
-		list.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
+		//list.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 13));
 		list.setBorder(BorderFactory.createLineBorder(new Color(210, 218, 232), 5, true));
 		list.setFixedCellWidth(120);
 		
@@ -439,7 +455,7 @@ public class MultiChatClient {
 		
 		//south
 		tfMsg = new JTextField();
-		tfMsg.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 14));
+		//tfMsg.setFont(new Font("Bitstream Vera Sans Mono", Font.PLAIN, 14));
 		tfMsg.addActionListener(al);	//엔터는 특이하게 KeyListener가아녀도 이걸로해도된다(textArea는 원래 엔터키 역할이 있었으므로 거기선 엔터 리스너로 안먹혀
 		tfMsg.setActionCommand("B");	//엔터치면 이값이 돼
 		
