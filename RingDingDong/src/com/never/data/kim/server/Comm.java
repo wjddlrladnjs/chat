@@ -69,7 +69,7 @@ public class Comm extends Thread{
 	public synchronized int readLength(){
 		int tempLength = 0;
 		try{
-			dis.readInt();
+			tempLength = dis.readInt();
 		}catch(IOException e){
 			server.addChatAlert("reveive error: " + e);
 		}
@@ -82,6 +82,7 @@ public class Comm extends Thread{
 		System.out.println("클라가 준 dataLength: " + dataLength);
 		
 		try{
+			tempImageData = new byte[dataLength];
 			dis.readFully(tempImageData, 0, dataLength);
 		}catch(IOException e){
 			server.addChatAlert("reveive error: " + e);

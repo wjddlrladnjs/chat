@@ -38,7 +38,7 @@ public class BgrImage extends Thread{
 	public void run(){
 		
 		varDistribute();	//length와 byte[]를 얻어와 저장한다
-		
+		System.out.println("여기까진 왔따!");
 		isRunning = true;
 		
 		//이제 byte에서 파일로 변환해야겠지?
