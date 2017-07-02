@@ -11,7 +11,7 @@ public class Com extends Thread{
 	DataOutputStream dos=null ;
 	ChatServer server ;
 	ServerThread serverthread ;
-
+	String log ; 
 	String name="";
 	static int num =0;
 	boolean onAir ;
@@ -112,7 +112,13 @@ public class Com extends Thread{
 					
 					break;
 				
-				
+				case '1' :
+					
+					log = server.serverChat;
+					
+					
+					
+					break;
 				
 				}//스위치의끝
 				

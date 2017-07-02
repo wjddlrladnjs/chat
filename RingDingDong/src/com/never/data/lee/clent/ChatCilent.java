@@ -63,7 +63,11 @@ public class ChatCilent {
 	};
 
 	synchronized void  serverLogDown(){
-		new LogDown(this);
+		try {
+			dos.writeChar('1');
+			dos.flush();
+			
+		} catch (IOException e) {}
 	}
 
 

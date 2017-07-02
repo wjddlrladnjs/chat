@@ -18,11 +18,13 @@ public class ChatServer {
 	private JTextField tfPort;
 	private JButton btnStart,btnStop;
 	private JTextArea taChatList ; 
-
+	public String serverChat;
 	
 	ServerThread serverThread;
 	
 	
+	
+
 	ActionListener listener  = new ActionListener() {
 
 		@Override
@@ -44,6 +46,7 @@ public class ChatServer {
 	
 	public  synchronized void addChatList(String msg){ //동기화 서버가 쓰레드기때문에 여러사람이한번에달라고하면 안되니까 동기화시켜야함 
 		taChatList.append(msg+"\n");
+		serverChat = String.format("%s \n", msg);
 		int length = taChatList.getText().length();//스트링에 랭쓰라는메소드가있다 
 		taChatList.setCaretPosition(length);//j스크롤 아니면  뷰포지션
 		//j텍스트에리어 셋 케얼 포지션 
