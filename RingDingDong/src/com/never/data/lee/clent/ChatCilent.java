@@ -27,6 +27,7 @@ public class ChatCilent {
 	JTextField tfIP, tfPort,tfMessge;
 	JTextArea taChatList ;
 
+	
 	DataInputStream dis;
 	DataOutputStream dos ;
 

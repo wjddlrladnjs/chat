@@ -13,6 +13,7 @@ public class ServerThread implements  Runnable {
 	boolean onAir ;
 	ServerSocket ss ;
 
+	
 
 	ArrayList<Com> comList = new ArrayList<Com>();
 

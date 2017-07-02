@@ -12,6 +12,7 @@ public class ReadThread extends Thread{
 		//클라이언트 객체하나만 받는다면 this.dis = client.dis;
 	}
 
+	
 	@Override
 	public void run() {
 

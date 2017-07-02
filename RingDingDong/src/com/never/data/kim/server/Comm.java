@@ -2,6 +2,8 @@ package com.never.data.kim.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -18,6 +20,11 @@ public class Comm extends Thread{
 	//io는 byte밖에안되는데 난 문자열 등등 주고받고싶어!
 	DataInputStream dis = null;
 	DataOutputStream dos = null;
+	
+	//이미지를 위하여
+	FileInputStream fis = null;
+	FileOutputStream fos = null;
+	BgrImage bgrImage;
 	
 	boolean isRunning = false;
 	
@@ -57,6 +64,32 @@ public class Comm extends Thread{
 //				//여기서 return해도 실행이 된다..!
 //		}
 //	}
+	
+	//이미지를 위한 메소드 추가
+	public int readLength(){
+		int tempLength = 0;
+		try{
+			dis.readInt();
+		}catch(IOException e){
+			server.addChatAlert("reveive error: " + e);
+		}
+		
+		return tempLength;
+	}
+	
+	public byte[] readImageData(int dataLength){
+		byte[] tempImageData = null;
+		
+		try{
+			dis.readFully(tempImageData, 0, dataLength);
+		}catch(IOException e){
+			server.addChatAlert("reveive error: " + e);
+		}
+		return tempImageData;
+	}
+
+	
+	
 	
 	public void sendMessage(char protocol, String msg){
 		try{
@@ -99,6 +132,7 @@ public class Comm extends Thread{
 		
 		//상대방이주는문자받자
 		while(isRunning){		//이리할줄 아는게 진정 switch case나 if를활용알줄아는것이다
+			
 			try {
 				protocol = dis.readChar();
 				switch(protocol){ //항상 문자하나 보내고 뭐 보내는걸루다가
@@ -142,6 +176,18 @@ public class Comm extends Thread{
 					msg = name + "의 pm: " + dis.readUTF();
 					server.addChatAlert(rName + "에게" + msg + "보냄");//정통법에의거하여 전산담당자가 로그 다 저장해둬야함 안그러면 처벌받음 나라에서달라면 줘야함
 					thread.sendMsg2One(protocol, msg, rName);
+					
+					break;
+					
+				// 이미지
+				case 'i':
+				//클라서 서버로 보내는 프로토콜
+				//dis.writeChar('i');
+				//dis.writeInt(length);
+				//fos.write(brr);
+					bgrImage = new BgrImage(server, thread, this); 
+					
+					bgrImage.start(); //데이터 파일로 변환하고 저장한다음 각각 클라에 쏘는거
 					
 					break;
 				}
