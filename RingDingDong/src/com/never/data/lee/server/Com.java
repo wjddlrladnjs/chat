@@ -36,8 +36,7 @@ public class Com extends Thread{
 		}
 
 	}
-
-	public void sendMessage(char protocol,String msg){
+	public void sendMessage(char protocol,String msg){ // 서버채팅로그를긁어오자 
 		try {
 			dos.writeChar(protocol);
 			dos.flush();

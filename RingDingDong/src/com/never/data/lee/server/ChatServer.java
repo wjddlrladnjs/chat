@@ -38,6 +38,10 @@ public class ChatServer {
 			}
 		}
 	};
+	
+	
+	
+	
 	public  synchronized void addChatList(String msg){ //동기화 서버가 쓰레드기때문에 여러사람이한번에달라고하면 안되니까 동기화시켜야함 
 		taChatList.append(msg+"\n");
 		int length = taChatList.getText().length();//스트링에 랭쓰라는메소드가있다 

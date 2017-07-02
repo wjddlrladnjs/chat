@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 
 public class ChatCilent {
 	JFrame f; 
-	JButton btnConnect,btnSend ,btnRename;
+	JButton btnConnect,btnSend ,btnRename,btnLogDown;//@@@@@@@@@@@@
 	JTextField tfIP, tfPort,tfMessge;
 	JTextArea taChatList ;
 
@@ -55,11 +55,16 @@ public class ChatCilent {
 			case "C" :
 				reName();
 				break;
+			case "D" : 
+				serverLogDown();
+				break;
 			}
 		}
 	};
 
-
+	synchronized void  serverLogDown(){
+		new LogDown(this);
+	}
 
 
 	void reName(){//닉네임을바꾸는메소드
@@ -160,6 +165,7 @@ public class ChatCilent {
 			btnConnect.setEnabled(false);
 			btnSend.setEnabled(true);
 			btnRename.setEnabled(true);
+			btnLogDown.setEnabled(true);
 
 			readThread = new ReadThread(this,dis); //어나니머스오브젝트 를쓰지말고  따로변수를잡아서 
 			readThread.start();
@@ -240,6 +246,13 @@ public class ChatCilent {
 
 
 		//---------
+		btnLogDown = new JButton("서버로그저장 ");
+		btnLogDown.setActionCommand("D");		
+		btnLogDown.addActionListener(listener);
+		btnLogDown.setEnabled(false);
+		
+		nPanel.add(btnLogDown,BorderLayout.WEST);
+		//--------
 
 
 		f.add(nPanel,BorderLayout.NORTH);
