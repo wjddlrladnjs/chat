@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -40,7 +42,7 @@ public class MakeFileExample {
 				doAction4("a.txt", "x.txt"); //c:\fData
 				break;
 			case "E":
-				doAction5("C:\\fData"); //c:\fData
+				doAction5("C:\\javaDev"); //c:\fData
 				break;
 			}
 		}
@@ -214,6 +216,18 @@ public class MakeFileExample {
 		if(!f4.exists()){
 			f4.mkdir();
 		}
+		
+		File f5 = new File(f4, "a.txt");
+		byte[] brr = {'a', 'b'};
+		try {
+			FileOutputStream fos = new FileOutputStream(f5);
+			fos.write(brr);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		
 		System.out.println("성공");
 		//클릭시 년월일 + 시 + 분 으로 폴더 생성하기 각가 밑에다가
