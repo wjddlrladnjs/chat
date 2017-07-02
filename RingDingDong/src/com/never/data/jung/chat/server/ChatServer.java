@@ -43,8 +43,9 @@ public class ChatServer {
 			String cmd = e.getActionCommand();
 			
 			switch( cmd ) {
-			case "startServer":
+			case "startServer": case "port":
 				StartServer();
+				btnStop.grabFocus();
 				break;
 			case "stopServer":
 				stopServer();
@@ -106,6 +107,7 @@ public class ChatServer {
 	public void controlStopButton(boolean state) {
 		btnStart.setEnabled(!state);
 		btnStop.setEnabled(state);
+		tfPort.setEnabled(!state);
 	}
 
 	// start 버튼 눌렸을 때 동작할 메서드.
@@ -132,7 +134,7 @@ public class ChatServer {
 			} 
 		}
 		// 입력된 포트가 정상일 때 진행.
-		tfPort.setEditable(false);
+		tfPort.setEnabled(false);
 		serverThread = new ServerThread( this );
 		new Thread(serverThread).start();
 		
