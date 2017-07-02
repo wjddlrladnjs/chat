@@ -13,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import javax.swing.filechooser.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -31,6 +30,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MultiChatClient {
 	
@@ -108,33 +109,51 @@ public class MultiChatClient {
 	
 	void changeBgrImg(){
 		////// 연결된상태인지 검증하자 <-join버튼이랑 같이 처리해주면 되는거 아니야?
-		//JOptionPane.showConfirmDialog(f, "");
 		
-		fc = new JFileChooser(".");
-		fc.setAcceptAllFileFilterUsed(false); //모든확장자 보이는 필터 끈다
-		fc.setFileFilter(filter);
+		String pathName = "C:\\Users\\Ashran\\Pictures\\";
+		String fName = "00000000000000000000000000.jpg";
 		
-		int returnVal = fc.showOpenDialog(f);
+		file = new File(pathName, fName);
+		int lngth = (int) file.length();
+		String name = file.getName();
 		
-		int tlength = (int) fc.getSelectedFile().length();
-		System.out.println("tlength: " + tlength);
 		
-		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
-			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
-			System.out.println(file.length());
-		}
+		addChatAlert(String.format("파일길이: %d, 파일이름: %s, 파일null여부: %b", lngth, name,
+				file.exists()));
 		
-		if(file == null){	//null이면 소용없게.
-			return;
-		}
 		
-		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
 		
-		//서버로 보내자
-		sendImageFile(file, tlength);
 		
-		//나의 배경화면을 바꾼다
-		//setBgrImageAs(file);
+		//========== 테스트 위해 밑에 다 지움 ==============
+		
+//		fc = new JFileChooser(".");
+//		
+//		//fc.setAcceptAllFileFilterUsed(false);
+//		FileFilter ff = new FileNameExtensionFilter("Image files", "jpg", "png");
+//        fc.addChoosableFileFilter(ff);
+//		
+//		int returnVal = fc.showOpenDialog(f);
+//		
+//		int tlength = (int) fc.getSelectedFile().length();
+//		System.out.println("tlength: " + tlength);
+//		
+//		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
+//			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
+////			System.out.println(file.length());		//왜안되지?
+//			System.out.println(file.getName());
+//		}
+//		
+//		if(file == null){	//null이면 소용없게.
+//			return;
+//		}
+//		
+//		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
+//		
+//		//서버로 보내자
+//		sendImageFile(file, tlength);
+//		
+//		//나의 배경화면을 바꾼다
+//		//setBgrImageAs(file);
 		
 	}
 	
@@ -146,7 +165,7 @@ public class MultiChatClient {
 		try {
 			fos = new FileOutputStream(file);
 			//파일이 정상적으로 들어왓으면 length를구한다
-			length = (int) file.length();
+			length = tempLength;
 			System.out.println("length:" + length);
 			
 			if(length == 0){	//크기 0이면 리턴
