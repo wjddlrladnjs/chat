@@ -96,7 +96,9 @@ public class ChatServerThread implements Runnable{
 		try {
 			sendAllMessage('M', self.name+" is get out of this room. ", self);
 			chatServer.addLog(self.name+" is get out of this room. ");
+			self.disNdosClose();
 			socket.close();
+			chatComList.remove(self);
 		} catch (IOException e) {
 			chatServer.addLog("[class]ServerThread [method]stopSocket "+e);
 		}

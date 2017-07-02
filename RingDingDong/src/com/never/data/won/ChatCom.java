@@ -73,7 +73,9 @@ public class ChatCom implements Runnable{
 					serverThread.sendOnlyOne('M', "Your name is changed to "+msg,this);					
 					break;
 				case 'X':
+					userName.remove(getMyCount(name));
 					serverThread.stopSocket(serverThread, this, socket);
+					
 					onAir = false;
 					break;
 				}
@@ -152,6 +154,15 @@ public class ChatCom implements Runnable{
 		}
 		tmp.substring(0, tmp.length()-2);
 		return tmp;
+	}
+	
+	void disNdosClose(){
+		try{
+		if(dis != null)	dis.close();
+		if(dos != null)	dos.close();
+		}catch(IOException e){
+			server.addLog("[class]ChatCom [method] disNdosClose "+e);
+		}
 	}
 
 
