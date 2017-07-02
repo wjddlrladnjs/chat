@@ -106,6 +106,19 @@ public class ServerCom implements Runnable {
 						// 이 쓰레드를 사용하던 클라가 종료되었으므로 반복을 멈춘다.
 						onAir = false;
 						break;
+						
+					case 'R' :
+						
+						String newClientName = dis.readUTF();
+						server.appendServerLog( clientName + "님 닉네임 변경 -> " + newClientName );
+						protocol = 'M';
+						serverThread.sendAllMessage( protocol, String.format("#%s님의 이름이 %s로 변경되었습니다.", clientName, newClientName));
+						// 클라명 변경 프로토콜.
+						protocol = 'U';
+						serverThread.sendAllMessage( protocol, clientName + "," + newClientName ) ;
+						clientName = newClientName;
+						break;
+						
 					}
 					
 				} catch( IOException e ) {

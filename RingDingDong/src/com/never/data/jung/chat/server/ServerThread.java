@@ -20,6 +20,17 @@ public class ServerThread implements Runnable {
 		this.server = chatServer;
 	}
 
+	// client들의 이름을 추출해서 각 각 클라이언트에게 보내준다.
+	public void sendClientNamelist( ServerCom com ) {
+	
+		String userList = "";
+		StringBuffer sb = new StringBuffer();
+		for( ServerCom c : comList ) {
+			sb.append(c.clientName + ",");
+		}
+		
+	}
+	
 	// 쓰레드 종료시 호출 되는 메서드.
 	public void stopServer() {
 		

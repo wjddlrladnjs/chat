@@ -49,6 +49,11 @@ public class ClientReadThread implements Runnable{
 						break;
 					}
 					break;
+				case 'U' :
+					msg = dis.readUTF();
+					String[] clientNames = msg.split(",");
+					client.updateClient( clientNames[0], clientNames[1]);
+					break;
 				}
 			}
 		}catch (IOException e) {

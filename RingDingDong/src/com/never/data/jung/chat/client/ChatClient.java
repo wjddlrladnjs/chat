@@ -3,7 +3,6 @@ package com.never.data.jung.chat.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -34,20 +34,19 @@ public class ChatClient {
 	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
 	sPanel;
 	private JTextField tfIP, tfPort, tfNickname, tfMessage;
-	
 	private JTextArea taClientLog;
 	// JEditorPane epChatLog;
 	private JScrollPane spUserList, spClientLog;
-	private JList<String> userList;
 	private JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
 
 	private Socket s;
 	private DataInputStream dis;
 	private DataOutputStream dos;
 	
-	String taImgPath;
-	Image img;
-	
+	String nickname;
+	DefaultListModel<String> model;
+	private JList<String> userList;
+
 	ActionListener listener = new ActionListener() {
 
 		public void actionPerformed(ActionEvent e) {
@@ -66,6 +65,9 @@ public class ChatClient {
 				sendMessage();
 				tfMessage.grabFocus();
 				break;
+			case "nick" :
+				changeNickname();
+				break;
 			}
 		}
 	};
@@ -73,12 +75,53 @@ public class ChatClient {
 	public ChatClient() {
 		initGUI();
 	}
-	// 서버와 접솝을 종료하는 메서드.
+	// 변경된 클라이언트 이름을 리스트에 적용한다.
+	public void updateClient(String oldClientName, String newClientName) {
+		
+		// 예전 이름을 쓰던 클라이언트의 위치를 찾아서,
+		int index = model.indexOf(oldClientName);
+		// 새로운 이름으로 변경해준다.
+		model.setElementAt(newClientName, index);
+		
+	}
+	// 서버와 접속을 종료하는 메서드.
 	private void disconnectServer() {
 		
 		doExitEvent(5);
 		appendClientLog(">> 접속을 종료하였습니다. <<");
 		changeButton(false);
+		
+	}
+	// 내게 보이는 닉네임을 변경한다.
+	public void setNickName(String nickname) {
+		
+		this.nickname = nickname;
+		f.setTitle(String.format("채팅 클라이언트  - %s", nickname));
+	}
+	
+	// 닉네임 바꿀 때 처리를 해보자.
+	private void changeNickname() {
+		
+		String newNickname = tfNickname.getText();
+		// 아무값도 들어오지 않았다면 메서드를 종료한다.
+		if( newNickname == null || newNickname.length() == 0 ) {
+			return;
+		}
+		setNickName(newNickname);
+		sendNickname(newNickname);
+		tfMessage.setText("");
+	}
+	// 닉네임 변경을 서버에 알린다.
+	private void sendNickname(String nickname) {
+		
+		try {
+			dos.writeChar('R');
+			dos.flush();
+			dos.writeUTF(nickname);
+			dos.flush();
+		} catch( IOException e ) {
+			appendClientLog("닉네임 변경 애러" + e.toString());
+		}
 		
 	}
 	
@@ -302,7 +345,10 @@ public class ChatClient {
 		// main.center.east.center
 		cPanel.add(cPanelEast, "East");
 		cPanelEast.add(cPanelEastCenter, "Center");
+			// list 부분
 		userList = new JList<String>();
+		model = new DefaultListModel<String>();
+		userList.setModel(model);
 		userList.setFixedCellWidth(130);
 		spUserList = new JScrollPane(userList);
 		spUserList.setBorder(new TitledBorder("user list"));
@@ -582,24 +628,11 @@ public class ChatClient {
 	public void setDos(DataOutputStream dos) {
 		this.dos = dos;
 	}
-	public String getTaImgPath() {
-		return taImgPath;
-	}
-	public void setTaImgPath(String taImgPath) {
-		this.taImgPath = taImgPath;
-	}
-	public Image getImg() {
-		return img;
-	}
-	public void setImg(Image img) {
-		this.img = img;
-	}
 	public ActionListener getListener() {
 		return listener;
 	}
 	public void setListener(ActionListener listener) {
 		this.listener = listener;
 	}
-
 	
 }
