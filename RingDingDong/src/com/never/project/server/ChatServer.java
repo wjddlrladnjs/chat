@@ -36,12 +36,12 @@ public class ChatServer {
 	private ServerThread serverThread;
 	private int port;
 	public static String serverTime;
-	
+
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			
+
 			String cmd = e.getActionCommand();
-			
+
 			switch( cmd ) {
 			case "startServer": case "port":
 				StartServer();
@@ -54,10 +54,10 @@ public class ChatServer {
 				getServerIP();
 				break;
 			}
-			
+
 		}
 	};
-	
+
 	// 생성자
 	public ChatServer() {
 		initGUI();
@@ -65,9 +65,9 @@ public class ChatServer {
 	}
 	// 서버를 정지하거나 껐을 때 호출.
 	private void stopServer(int state) {
-		
+
 		String msg = String.format("%s# 서버가 정지되었습니다.", serverTime);
-		
+
 		if( state == SERVER_STATE_STOP ) {
 			char protocol = 'Z';
 			int command = -4;
@@ -77,16 +77,16 @@ public class ChatServer {
 		} else if( state == SERVER_STATE_EXIT) {
 			System.exit(0);
 		}
-		
+
 	}
 	// 시간을 남겨보자.
 	public void setServerTime(){
-	
+
 		GregorianCalendar cal = new GregorianCalendar();
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 		String time = sdf.format(cal.getTime());
 		serverTime = "["+time+"]";
-		
+
 	}
 	// server log 메시지 띄우는 메서드.
 	public void appendServerLog( String msg ) {
@@ -95,7 +95,7 @@ public class ChatServer {
 		taServerLog.append(serverTime + msg + "\n");
 		// 자동 스크롤링
 		taServerLog.setCaretPosition( length );
-		
+
 	}
 	// server의 IP 받아서  출력하는 메서드.
 	private void getServerIP() {
@@ -106,7 +106,7 @@ public class ChatServer {
 		} catch (UnknownHostException e) {
 			appendServerLog("서버 IP를 읽어올 수 없습니다. :" + e);
 		}  
-		
+
 	}
 	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
 	public void controlStopButton(boolean state) {
@@ -116,10 +116,10 @@ public class ChatServer {
 	}
 	// start 버튼 눌렸을 때 동작할 메서드.
 	private void StartServer() {
-		
+
 		port = 12345;
 		String inputPort = tfPort.getText();
-		
+
 		// 입력된 port가 잘못되었을 때 처리.
 		if( inputPort != null && !"".equals(inputPort) ) {
 			try {
@@ -128,7 +128,7 @@ public class ChatServer {
 					throw new NumberFormatException();
 				}
 				appendServerLog("서버 Port : " + port);
-				
+
 			} catch( NumberFormatException e ) {
 				appendServerLog("잘못된 입력입니다.");
 				tfPort.selectAll();
@@ -140,24 +140,24 @@ public class ChatServer {
 
 		serverThread = new ServerThread( this );
 		new Thread(serverThread).start();
-		
+
 	}
 	// GUI 초기화.
 	private void initGUI() {
-		
+
 		f = new JFrame("Chat Server");
 		f.setBounds(0, 0, 500, 600);
 		f.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {stopServer(SERVER_STATE_EXIT);}
 		});
-		
+
 		mainPanel = new JPanel( new BorderLayout() );
 		nPanel = new JPanel( new BorderLayout() );
 		cPanel = new JPanel( new BorderLayout() );
 		sPanel = new JPanel( new GridLayout(2, 2));
 		sPanelCenter = new JPanel( new GridLayout(1, 4) );
 		sPanelSouth = new JPanel( new GridLayout(1, 2) );
-		
+
 		// main
 		f.add(mainPanel);
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -209,17 +209,17 @@ public class ChatServer {
 		sPanel.add(sPanelSouth, "South");
 		sPanelSouth.add(btnStart);
 		sPanelSouth.add(btnStop);
-		
+
 		f.setVisible(true);
-		
+
 	}
 	// main method
 	public static void main(String[] args) {
 
 		new ChatServer();
-		
+
 	}
-	
+
 	// 다른 클래스에서 맴버에 접근하기 위한 getter와 setter.
 	public JFrame getF() {
 		return f;
@@ -335,5 +335,5 @@ public class ChatServer {
 	public void setListener(ActionListener listener) {
 		this.listener = listener;
 	}
-	
+
 }

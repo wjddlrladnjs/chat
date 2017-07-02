@@ -3,6 +3,7 @@ package com.never.project.client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ClientReadThread implements Runnable{
 
@@ -83,6 +84,10 @@ public class ClientReadThread implements Runnable{
 				case 'D' :
 					msg = dis.readUTF();
 					client.deleteClient( msg );
+					break;
+				case '/' :
+					client.getChatCommand( this );
+					
 					break;
 				}
 			}
