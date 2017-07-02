@@ -11,7 +11,7 @@ public class Com extends Thread{
 	DataOutputStream dos=null ;
 	ChatServer server ;
 	ServerThread serverthread ;
-	String log ; 
+	 
 	String name="";
 	static int num =0;
 	boolean onAir ;
@@ -119,14 +119,12 @@ public class Com extends Thread{
 					
 					server.addChatList(namelog+"님이 서버의로그를 저장하였습니다 ");
 					
-					log = server.serverChat;
+					String log = server.myLog();
 					
 					dos.writeChar('2');//서버에서 또 클라이언트로 보냄 
 					dos.flush();
-					
 					dos.writeUTF(log);
 					dos.flush();
-					
 					
 					break;
 				
