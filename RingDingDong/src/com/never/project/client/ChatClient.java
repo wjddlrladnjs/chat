@@ -3,7 +3,6 @@ package com.never.project.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,28 +26,26 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 public class ChatClient {
-	static int num = 0;
 	
 	private JFrame f;
 	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
-	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
-	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
-	sPanel;
+					cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
+					cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
+					sPanel;
 	private JTextField tfIP, tfPort, tfNickname, tfMessage;
-	
 	private JTextArea taClientLog;
 	// JEditorPane epChatLog;
 	private JScrollPane spUserList, spClientLog;
-	private JList<String> userList;
 	private JButton btnConnect, btnNickname, btnFuntion1, btnFuntion2, btnFuntion3, btnFuntion4, btnNameChange, btnSend;
 
 	private Socket s;
 	private DataInputStream dis;
 	private DataOutputStream dos;
 	
-	String taImgPath;
-	Image img;
-	
+	private String nickname;
+	private DefaultListModel<String> model;
+	private JList<String> clientList;
+
 	ActionListener listener = new ActionListener() {
 
 		public void actionPerformed(ActionEvent e) {
@@ -66,6 +64,9 @@ public class ChatClient {
 				sendMessage();
 				tfMessage.grabFocus();
 				break;
+			case "nick" :
+				changeNickname();
+				break;
 			}
 		}
 	};
@@ -73,22 +74,106 @@ public class ChatClient {
 	public ChatClient() {
 		initGUI();
 	}
-	// 서버와 접솝을 종료하는 메서드.
+	// 귓속말 처리 메서드
+	private void sendWhisperMessage(String tagetClient, String msg) {
+
+		if( msg.length() == 0 ) {
+			return;
+		}
+		try {
+			// 선택한 대상에게 귓말을 보낸다.
+			dos.writeChar('W');	// 귓속말 프로토콜
+			dos.flush();
+			dos.writeUTF(tagetClient);
+			dos.flush();
+			dos.writeUTF(msg);
+			dos.flush();
+		} catch( IOException e ) {
+			appendClientLog("클라 메시지 전송 애러 : " + e.toString());
+		}
+		
+	}
+	// 클라가 서버에서 나가면 해당 클라를 리스트에서 삭제한다.
+	public void deleteClient(String clientName) {
+		// removeElement는 Object까지 삭제가 가능하다.
+		model.removeElement(clientName);
+		
+	}
+	// 접속 중에 추가되는 클라 이름을 리스트에 추가한다.
+	public void addClientName(String clientName) {
+		model.addElement( clientName );
+	}
+	// 서버 접속시 서버가 보내온 clientName을 list에 추가한다.
+	public void showUserList( String[] clientNameList ) {
+		
+		for( String clientName : clientNameList ) {
+			model.addElement( clientName );
+		}
+		
+	}
+	// 변경된 클라이언트 이름을 리스트에 적용한다.
+	public void updateClient(String oldClientName, String newClientName) {
+		
+		// 예전 이름을 쓰던 클라이언트의 위치를 찾아서,
+		int index = model.indexOf(oldClientName);
+		// 새로운 이름으로 변경해준다.
+		model.setElementAt(newClientName, index);
+		
+	}
+	// 서버와 접속을 종료하는 메서드.
 	private void disconnectServer() {
 		
 		doExitEvent(5);
 		appendClientLog(">> 접속을 종료하였습니다. <<");
+		model.clear();
 		changeButton(false);
 		
 	}
-	
+	// 내게 보이는 닉네임을 변경한다.
+	public void setNickName(String nickname) {
+		
+		this.nickname = nickname;
+		f.setTitle(String.format("채팅 클라이언트  - %s", nickname));
+	}
+	// 닉네임 바꿀 때 처리를 해보자.
+	private void changeNickname() {
+		
+		String newNickname = tfNickname.getText();
+		// 아무값도 들어오지 않았다면 메서드를 종료한다.
+		if( newNickname == null || newNickname.length() == 0 ) {
+			return;
+		}
+		setNickName(newNickname);
+		sendNickname(newNickname);
+		tfNickname.setText("");
+		tfNickname.grabFocus();
+	}
+	// 닉네임 변경을 서버에 알린다.
+	private void sendNickname(String nickname) {
+		
+		try {
+			dos.writeChar('R');
+			dos.flush();
+			dos.writeUTF(nickname);
+			dos.flush();
+		} catch( IOException e ) {
+			appendClientLog("닉네임 변경 애러" + e.toString());
+		}
+		
+	}
 	// 메시지 전송을 위한 메서드.
 	private void sendMessage() {
 
 		String msg = tfMessage.getText();
 		tfMessage.setText("");
+		String tagetClient = clientList.getSelectedValue();
 		
 		if( msg.length() == 0 ) {
+			return;
+		}
+		// 만약에 리스트에 선택된 사람이 있다면 귓속말을 한다.
+		if( tagetClient != null ) {
+			sendWhisperMessage(tagetClient, msg);
 			return;
 		}
 		try {
@@ -302,9 +387,12 @@ public class ChatClient {
 		// main.center.east.center
 		cPanel.add(cPanelEast, "East");
 		cPanelEast.add(cPanelEastCenter, "Center");
-		userList = new JList<String>();
-		userList.setFixedCellWidth(130);
-		spUserList = new JScrollPane(userList);
+			// list 부분
+		clientList = new JList<String>();
+		model = new DefaultListModel<String>();
+		clientList.setModel(model);
+		clientList.setFixedCellWidth(130);
+		spUserList = new JScrollPane(clientList);
 		spUserList.setBorder(new TitledBorder("user list"));
 		spUserList.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createLineBorder(Color.BLACK),
@@ -344,6 +432,8 @@ public class ChatClient {
 		btnNickname.setEnabled(false);
 		cPanelEastSouthSouth.add(btnNickname, "East");
 		tfNickname = new JTextField(5);
+		tfNickname.addActionListener(listener);
+		tfNickname.setActionCommand("nick");
 		cPanelEastSouthSouth.add(tfNickname, "Center");
 
 		// main.south
@@ -511,10 +601,10 @@ public class ChatClient {
 		this.spClientLog = spClientLog;
 	}
 	public JList<String> getUserList() {
-		return userList;
+		return clientList;
 	}
 	public void setUserList(JList<String> userList) {
-		this.userList = userList;
+		this.clientList = userList;
 	}
 	public JButton getBtnConnect() {
 		return btnConnect;
@@ -582,24 +672,23 @@ public class ChatClient {
 	public void setDos(DataOutputStream dos) {
 		this.dos = dos;
 	}
-	public String getTaImgPath() {
-		return taImgPath;
-	}
-	public void setTaImgPath(String taImgPath) {
-		this.taImgPath = taImgPath;
-	}
-	public Image getImg() {
-		return img;
-	}
-	public void setImg(Image img) {
-		this.img = img;
-	}
 	public ActionListener getListener() {
 		return listener;
 	}
 	public void setListener(ActionListener listener) {
 		this.listener = listener;
 	}
-
+	public String getNickname() {
+		return nickname;
+	}
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+	public DefaultListModel<String> getModel() {
+		return model;
+	}
+	public void setModel(DefaultListModel<String> model) {
+		this.model = model;
+	}
 	
 }

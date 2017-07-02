@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
@@ -32,10 +31,9 @@ public class ChatServer {
 	private JTextField tfPort;
 	private JScrollPane spServerLog;
 	private JButton btnStart, btnStop, btnFunction1, btnFunction2, btnFunction3, btnFunction4 ;
-
 	private ServerThread serverThread;
 	private int port;
-	static String serverTime;
+	public static String serverTime;
 	
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -63,13 +61,19 @@ public class ChatServer {
 		initGUI();
 		getServerIP();
 	}
-	
+	// 서버를 정지하거나 껐을 때 호출.
 	private void stopServer() {
-		char protocol = 'Z';
-		int command = -4;
-		String msg = String.format("%s서버가 정지되었습니다.", serverTime);
-		serverThread.sendAdminMessage( protocol, command, msg );
-		serverThread.stopServer();
+		
+		String msg = String.format("%s# 서버가 정지되었습니다.", serverTime);
+		if( serverThread != null ) {
+			char protocol = 'Z';
+			int command = -4;
+			serverThread.sendAdminMessage( protocol, command, msg );
+			serverThread.stopServer();
+		} else {
+			System.exit(0);
+		}
+		
 	}
 	
 	// 시간을 남겨보자.
@@ -145,7 +149,7 @@ public class ChatServer {
 		f = new JFrame("Chat Server");
 		f.setBounds(0, 0, 500, 600);
 		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {System.exit(0);}
+			public void windowClosing(WindowEvent e) {stopServer();}
 		});
 		
 		mainPanel = new JPanel( new BorderLayout() );

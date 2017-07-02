@@ -13,24 +13,40 @@ public class ServerThread implements Runnable {
 	private Socket s;
 	private ServerCom serverCom;
 	private boolean onAir;
-	private ArrayList<ServerCom> comList = new ArrayList<ServerCom>();
+	private ArrayList<ServerCom> serverComList = new ArrayList<ServerCom>();
 	
 	// 매개변수로 넘겨 받은 server를 클래스 내에서 공유한다.
 	public ServerThread(ChatServer chatServer) {
 		this.server = chatServer;
 	}
+	// 선택된 대상의 com쓰레드를 찾아서 귓말을 보낸다.
+	public void sendWhisperMessage(String tagetClient, String msg) {
 
-	// client들의 이름을 추출해서 각 각 클라이언트에게 보내준다.
-	public void sendClientNamelist( ServerCom com ) {
-	
-		String userList = "";
-		StringBuffer sb = new StringBuffer();
-		for( ServerCom c : comList ) {
-			sb.append(c.clientName + ",");
+		ServerCom com = null;
+		for( int i = 0; i < serverComList.size(); i++ ) {
+			com = serverComList.get(i);
+			if( com.getClientName().equals(tagetClient)) {
+				break;
+			}
+		}
+		if( com != null ) {
+			char protocol = 'M';
+			com.sendMessage(protocol, msg);
 		}
 		
 	}
+	// client들의 이름을 추출해서 각 각 클라이언트에게 보내준다.
+	public void sendClientNamelist( ServerCom serverCom ) {
 	
+		String userList = "";
+		char protocol = 'L';
+		StringBuffer sb = new StringBuffer();
+		for( ServerCom c : serverComList ) {
+			sb.append(c.getClientName() + ",");
+		}
+		userList = sb.toString().substring(0, sb.length() - 1);
+		serverCom.sendMessage( protocol, userList );
+	}
 	// 쓰레드 종료시 호출 되는 메서드.
 	public void stopServer() {
 		
@@ -39,7 +55,7 @@ public class ServerThread implements Runnable {
 		try {
 			// 서버 소켓을 종료하고,
 			ss.close();
-			for( ServerCom com : comList ) {
+			for( ServerCom com : serverComList ) {
 				// com 객체도 닫아준 뒤에 삭제한다.
 				com.shutDownClient();
 				removeCom(com);
@@ -57,21 +73,32 @@ public class ServerThread implements Runnable {
 	// 채팅은 연결된 모두에게 보내야 한다.
 	// 연결되어진 클라 모두에게 메시지를 보낸다.
 	public void sendAllMessage( char protocol, String msg ) {
-		for( ServerCom com : comList ) {
+
+		for( ServerCom com : serverComList ) {
 			com.sendMessage( protocol, msg );
 		}
 		
 	}
+	// 전체 메시지를 보내지만 나를 제외한 나머지에게 보낼 때 쓰는 오버로드된 메서드.
+	public void sendAllMessage( char protocol, String msg, ServerCom itsme ) {
+		
+		for( ServerCom com : serverComList ) {
+			if(com != itsme ) {
+				com.sendMessage( protocol, msg );
+			}
+		}
+		
+	}
+	// 운영자 전용 메시지
 	public void sendAdminMessage( char protocol, int command, String msg ) {
-		for( ServerCom com : comList ) {
+		for( ServerCom com : serverComList ) {
 			com.sendAdminMessage( protocol, command, msg );
 		}
 		
 	}
-	
 	// 삭제 요청한 serverCom 클라 객체 삭제.
 	public void removeCom(ServerCom serverCom) {
-		comList.remove(serverCom);
+		serverComList.remove(serverCom);
 	}
 	
 	@Override
@@ -110,7 +137,7 @@ public class ServerThread implements Runnable {
 				// 서버는 여러 클라이언트와 동시 소통을 한다.
 				// 소통하고 있는 객체를 순서대로 저장한다.
 				serverCom = new ServerCom( server, this );
-				comList.add(serverCom);
+				serverComList.add(serverCom);
 				new Thread(serverCom).start();
 				
 			} catch( IOException e ) {
@@ -162,11 +189,11 @@ public class ServerThread implements Runnable {
 	}
 
 	public ArrayList<ServerCom> getComList() {
-		return comList;
+		return serverComList;
 	}
 
 	public void setComList(ArrayList<ServerCom> comList) {
-		this.comList = comList;
+		this.serverComList = comList;
 	}
 
 }

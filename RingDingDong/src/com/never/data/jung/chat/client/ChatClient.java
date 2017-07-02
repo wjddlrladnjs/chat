@@ -26,13 +26,12 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 public class ChatClient {
-	static int num = 0;
 	
 	private JFrame f;
 	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
-	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
-	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
-	sPanel;
+					cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
+					cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
+					sPanel;
 	private JTextField tfIP, tfPort, tfNickname, tfMessage;
 	private JTextArea taClientLog;
 	// JEditorPane epChatLog;
@@ -43,9 +42,9 @@ public class ChatClient {
 	private DataInputStream dis;
 	private DataOutputStream dos;
 	
-	String nickname;
-	DefaultListModel<String> model;
-	private JList<String> userList;
+	private String nickname;
+	private DefaultListModel<String> model;
+	private JList<String> clientList;
 
 	ActionListener listener = new ActionListener() {
 
@@ -75,6 +74,43 @@ public class ChatClient {
 	public ChatClient() {
 		initGUI();
 	}
+	// 귓속말 처리 메서드
+	private void sendWhisperMessage(String tagetClient, String msg) {
+
+		if( msg.length() == 0 ) {
+			return;
+		}
+		try {
+			// 선택한 대상에게 귓말을 보낸다.
+			dos.writeChar('W');	// 귓속말 프로토콜
+			dos.flush();
+			dos.writeUTF(tagetClient);
+			dos.flush();
+			dos.writeUTF(msg);
+			dos.flush();
+		} catch( IOException e ) {
+			appendClientLog("클라 메시지 전송 애러 : " + e.toString());
+		}
+		
+	}
+	// 클라가 서버에서 나가면 해당 클라를 리스트에서 삭제한다.
+	public void deleteClient(String clientName) {
+		// removeElement는 Object까지 삭제가 가능하다.
+		model.removeElement(clientName);
+		
+	}
+	// 접속 중에 추가되는 클라 이름을 리스트에 추가한다.
+	public void addClientName(String clientName) {
+		model.addElement( clientName );
+	}
+	// 서버 접속시 서버가 보내온 clientName을 list에 추가한다.
+	public void showUserList( String[] clientNameList ) {
+		
+		for( String clientName : clientNameList ) {
+			model.addElement( clientName );
+		}
+		
+	}
 	// 변경된 클라이언트 이름을 리스트에 적용한다.
 	public void updateClient(String oldClientName, String newClientName) {
 		
@@ -89,6 +125,7 @@ public class ChatClient {
 		
 		doExitEvent(5);
 		appendClientLog(">> 접속을 종료하였습니다. <<");
+		model.clear();
 		changeButton(false);
 		
 	}
@@ -98,7 +135,6 @@ public class ChatClient {
 		this.nickname = nickname;
 		f.setTitle(String.format("채팅 클라이언트  - %s", nickname));
 	}
-	
 	// 닉네임 바꿀 때 처리를 해보자.
 	private void changeNickname() {
 		
@@ -109,7 +145,8 @@ public class ChatClient {
 		}
 		setNickName(newNickname);
 		sendNickname(newNickname);
-		tfMessage.setText("");
+		tfNickname.setText("");
+		tfNickname.grabFocus();
 	}
 	// 닉네임 변경을 서버에 알린다.
 	private void sendNickname(String nickname) {
@@ -124,14 +161,19 @@ public class ChatClient {
 		}
 		
 	}
-	
 	// 메시지 전송을 위한 메서드.
 	private void sendMessage() {
 
 		String msg = tfMessage.getText();
 		tfMessage.setText("");
+		String tagetClient = clientList.getSelectedValue();
 		
 		if( msg.length() == 0 ) {
+			return;
+		}
+		// 만약에 리스트에 선택된 사람이 있다면 귓속말을 한다.
+		if( tagetClient != null ) {
+			sendWhisperMessage(tagetClient, msg);
 			return;
 		}
 		try {
@@ -346,11 +388,11 @@ public class ChatClient {
 		cPanel.add(cPanelEast, "East");
 		cPanelEast.add(cPanelEastCenter, "Center");
 			// list 부분
-		userList = new JList<String>();
+		clientList = new JList<String>();
 		model = new DefaultListModel<String>();
-		userList.setModel(model);
-		userList.setFixedCellWidth(130);
-		spUserList = new JScrollPane(userList);
+		clientList.setModel(model);
+		clientList.setFixedCellWidth(130);
+		spUserList = new JScrollPane(clientList);
 		spUserList.setBorder(new TitledBorder("user list"));
 		spUserList.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createLineBorder(Color.BLACK),
@@ -390,6 +432,8 @@ public class ChatClient {
 		btnNickname.setEnabled(false);
 		cPanelEastSouthSouth.add(btnNickname, "East");
 		tfNickname = new JTextField(5);
+		tfNickname.addActionListener(listener);
+		tfNickname.setActionCommand("nick");
 		cPanelEastSouthSouth.add(tfNickname, "Center");
 
 		// main.south
@@ -557,10 +601,10 @@ public class ChatClient {
 		this.spClientLog = spClientLog;
 	}
 	public JList<String> getUserList() {
-		return userList;
+		return clientList;
 	}
 	public void setUserList(JList<String> userList) {
-		this.userList = userList;
+		this.clientList = userList;
 	}
 	public JButton getBtnConnect() {
 		return btnConnect;
@@ -633,6 +677,18 @@ public class ChatClient {
 	}
 	public void setListener(ActionListener listener) {
 		this.listener = listener;
+	}
+	public String getNickname() {
+		return nickname;
+	}
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+	public DefaultListModel<String> getModel() {
+		return model;
+	}
+	public void setModel(DefaultListModel<String> model) {
+		this.model = model;
 	}
 	
 }
