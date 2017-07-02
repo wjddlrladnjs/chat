@@ -4,6 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,11 +20,13 @@ import javax.swing.JTextField;
 public class ChatServer {
 	//GUI변수
 	private JFrame f;							//전체 프레임
-	private JButton btnOn, btnOff;				//btnOn: 서버켜기 btn2: 서버끄기
+	private JButton btnOn, btnOff, btnLog;				//btnOn: 서버켜기 btn2: 서버끄기
 	private JTextField tfPort;					//port번호 기입
 	private JTextArea taLog;					//textArea: Log 기록창
 	//객체 변수
 	private ChatServerThread serverThread;		//서버스레드 객체. 전달용
+
+	static String log="";
 
 	ActionListener listener = new ActionListener(){
 		@Override
@@ -32,6 +38,9 @@ public class ChatServer {
 				break;
 			case "b":
 				stopServer();
+				break;
+			case "c":
+				logFile();
 				break;
 			}
 		}
@@ -56,6 +65,7 @@ public class ChatServer {
 	void buttonOnState(){
 		btnOn.setEnabled(false);
 		btnOff.setEnabled(true);
+		btnLog.setEnabled(true);
 	}
 
 	//listener 'b' cmd에 따른 서버 끄기 기능 구현 메소드.
@@ -65,8 +75,30 @@ public class ChatServer {
 		btnOff.setEnabled(false);
 	}
 
+	void logFile(){
+		FileOutputStream fos = null;
+		byte[] logFile= log.getBytes();		
+		try {
+			fos = new FileOutputStream("log.txt");
+			for(byte log : logFile){
+				fos.write(log);
+			}
+			addLog("Log file is created.");
+		} catch (FileNotFoundException e) {
+			addLog("Server|[class]ChatServer|[method]logFile: "+e);
+		}catch(IOException e1){
+			addLog("Server|[class]ChatServer|[method]logFile: "+e1);
+		}
+	}
+
+	void logSave(String msg){
+		String logLine = msg +"\n";
+		log = log+logLine;
+	}
+
 	void addLog(String msg){
 		taLog.append(msg + "\n");
+		logSave(msg);
 		int length = taLog.getText().length(); 
 		taLog.setCaretPosition(length);
 	}
@@ -91,6 +123,10 @@ public class ChatServer {
 		p1.add(btnOn);
 		p1.add(btnOff);
 		p2.add("West",new JLabel("Port"));
+		p2.add("East",btnLog = new JButton("Log Save"));
+		btnLog.setActionCommand("c");
+		btnLog.addActionListener(listener);
+		btnLog.setEnabled(false);
 
 
 		tfPort = new JTextField(10);
