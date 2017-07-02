@@ -66,7 +66,7 @@ public class Comm extends Thread{
 //	}
 	
 	//이미지를 위한 메소드 추가
-	public int readLength(){
+	public synchronized int readLength(){
 		int tempLength = 0;
 		try{
 			dis.readInt();
@@ -77,7 +77,7 @@ public class Comm extends Thread{
 		return tempLength;
 	}
 	
-	public byte[] readImageData(int dataLength){
+	public synchronized byte[] readImageData(int dataLength){
 		byte[] tempImageData = null;
 		
 		try{
@@ -88,7 +88,19 @@ public class Comm extends Thread{
 		return tempImageData;
 	}
 
-	
+	//이미지 byte배열 보내기
+	public synchronized void sendImageData(char protocol, int imgSize, byte[] imgData){
+		try{
+			dos.writeChar(protocol);	//프로토콜보내고 그담에메세지보내
+			dos.flush();	//live한 data들이 좀 빨리감. 없으면 살짝 딜레이생김
+			dos.writeInt(imgSize);
+			dos.flush();
+			dos.write(imgData);
+			dos.flush();
+		}catch(IOException e){
+			server.addChatAlert("send Error: " + e);
+		}
+	}
 	
 	
 	public void sendMessage(char protocol, String msg){
@@ -187,7 +199,7 @@ public class Comm extends Thread{
 				//fos.write(brr);
 					bgrImage = new BgrImage(server, thread, this); 
 					
-					bgrImage.start(); //데이터 파일로 변환하고 저장한다음 각각 클라에 쏘는거
+					bgrImage.start(); //데이터 파일로 변환한다음 각각 클라에 쏘는거
 					
 					break;
 				}

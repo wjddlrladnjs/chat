@@ -48,6 +48,22 @@ public class ServerThread implements Runnable{
 		commList.remove(comm);
 	}
 	
+	
+	public synchronized void sendImageData2All(char protocol, int fileLength, byte[] brr){
+		for(Comm comm : commList){
+			comm.sendImageData(protocol, fileLength, brr);
+		}
+	}
+	
+	public synchronized void sendImageData2All(char protocol, int fileLength, byte[] brr, Comm self){
+		for(Comm comm : commList){
+			if(comm != self){
+				comm.sendImageData(protocol, fileLength, brr);
+			}
+		}
+	}
+	
+	
 	public void sendMsg2All(char protocol, String msg){
 		for(Comm comm : commList){ //ouya
 			comm.sendMessage(protocol, msg);
@@ -64,17 +80,17 @@ public class ServerThread implements Runnable{
 			}
 		}
 	}
-	
-public void sendMsg2One(char protocol, String msg, String rName){ //오버로딩 오졌죠
-		
+
+	public void sendMsg2One(char protocol, String msg, String rName){ //오버로딩 오졌죠
+
 		//나만빼고 보내고싶으면 이렇게
-		
-//		for(Comm comm : commList){ 
-//			if(comm.name.equals(rName)){
-//				comm.sendMessage(protocol, msg);
-//			}
-//		}
-		
+
+		//		for(Comm comm : commList){ 
+		//			if(comm.name.equals(rName)){
+		//				comm.sendMessage(protocol, msg);
+		//			}
+		//		}
+
 		//for Colon은 전체를 무적권 다 하기때문에
 		//중간에 빠져나올가능성있거나 하는거 있으면 i 루다가 해라.퍼포먼스^^
 		Comm com = null;

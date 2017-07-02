@@ -13,12 +13,11 @@ import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import javax.swing.filechooser.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
@@ -63,7 +62,27 @@ public class MultiChatClient {
 	DataInputStream dis = null;
 	DataOutputStream dos = null;
 	
-  
+	//이미지 파일 선택을 위한 파일필터
+	FileFilter filter = new FileFilter() {
+		
+		@Override
+		public boolean accept(File f) {
+			if(f.isDirectory()){	//폴더면 true반환
+				return true;
+			}else if(f.getName().endsWith(".jpg") ||
+					f.getName().endsWith(".png") ||
+					f.getName().endsWith(".bmp")){
+				return true;
+			}
+			else return false;
+		}
+
+		@Override
+		public String getDescription() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
 	
 	
 	ActionListener al = new ActionListener() {
@@ -92,6 +111,8 @@ public class MultiChatClient {
 		//JOptionPane.showConfirmDialog(f, "");
 		
 		fc = new JFileChooser(".");
+		fc.setAcceptAllFileFilterUsed(false); //모든확장자 보이는 필터 끈다
+		fc.setFileFilter(filter);
 		
 		int returnVal = fc.showOpenDialog(f);
 		file = null;
@@ -109,6 +130,9 @@ public class MultiChatClient {
 		//서버로 보내자
 		sendImageFile(file);
 		
+		//나의 배경화면을 바꾼다
+		//setBgrImageAs(file);
+		
 	}
 	
 	void sendImageFile(File file){
@@ -117,7 +141,6 @@ public class MultiChatClient {
 		byte[] brr = null; //데이타가 들어갈 배열
 		try {
 			fos = new FileOutputStream(file);
-			
 			//파일이 정상적으로 들어왓으면 length를구한다
 			length = (int) file.length();
 			brr = new byte[length];	//length만큼 byte배열 잡아줌
@@ -135,6 +158,8 @@ public class MultiChatClient {
 			fos.write(brr, 0, brr.length);	//쓴다
 			fos.flush();
 			
+			addChatAlert("");
+			
 		} catch (FileNotFoundException e) {
 			addChatAlert("파일 출력 에라: " + e);
 		} catch (IOException e) {
@@ -145,6 +170,16 @@ public class MultiChatClient {
 		//dis.writeChar('i');
 		//dis.writeInt(length);
 		//fos.write(brr);
+		
+	}
+	
+	//나의 배경화면만 바꾼다
+	void setBgrImageAs(){
+		
+	}
+	
+	//서버에서 받아왔을경우 바꾼다
+	void setBgrImageFromServer(){
 		
 	}
 	

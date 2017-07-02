@@ -218,7 +218,9 @@ public class MakeFileExample {
 		}
 		
 		File f5 = new File(f4, "a.txt");
-		byte[] brr = {'a', 'b'};
+		String str = "asfdsfsdfdf";
+		byte[] brr = null;
+		brr = str.getBytes();
 		try {
 			FileOutputStream fos = new FileOutputStream(f5);
 			fos.write(brr);
@@ -227,6 +229,7 @@ public class MakeFileExample {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		
 		
 		System.out.println("성공");

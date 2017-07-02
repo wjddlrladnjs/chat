@@ -9,9 +9,36 @@ public class ReaderThread extends Thread{
 	MultiChatClient client;
 	DataInputStream dis;
 	
+	//이미지처리용 쓰레드
+	ImageProcess processor;
+	
 	public ReaderThread(MultiChatClient client, DataInputStream dis){
 		this.client = client;
 		this.dis = dis;	//야! 상식적으로 생각해봐! 생성자 인자받았는데 여서만쓰겠냐 아님 딴데서도 갖다쓰겠냐? 엉?
+	}
+	
+	public synchronized int getFileLength(){
+		int tempLength = 0;
+		
+		try {
+			tempLength = dis.readInt();
+		} catch (IOException e) {
+			client.addChatAlert("읽기가 올바르지 않습니다: " + e); 
+		}
+		
+		return tempLength;
+	}
+	
+	public synchronized byte[] getImageData(int fileLength){
+		byte[] tempBytes = null;
+		
+		try{
+			dis.read(tempBytes, 0, fileLength);
+		}catch(IOException e){
+			client.addChatAlert("읽기가 올바르지 않습니다: " + e);
+		}
+		
+		return tempBytes;
 	}
 	
 	public void run(){
@@ -75,6 +102,13 @@ public class ReaderThread extends Thread{
 				case 'P':
 					msg = dis.readUTF();
 					client.addChatAlert(msg);
+					break;
+					
+					//이미지
+				case 'i':
+					processor = new ImageProcess(client, this);
+					processor.start();
+					
 					break;
 				}
 				
