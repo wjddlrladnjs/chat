@@ -1,18 +1,10 @@
 package com.never.project.server;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,320 +12,113 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
 
 public class ChatServer {
-
-	// 다른 클래스에서 접근 하기 위해 맴버 변수로 선언.
-	public static final int SERVER_STATE_STOP = 11;
-	public static final int SERVER_STATE_EXIT = 44;
-	private JFrame f;
-	private JPanel mainPanel, nPanel, cPanel, sPanel, sPanelCenter, sPanelSouth;
-	private JTextArea taServerLog;
-	private JTextField tfPort;
-	private JScrollPane spServerLog;
-	private JButton btnStart, btnStop, btnFunction1, btnFunction2, btnFunction3, btnFunction4 ;
-	private ServerThread serverThread;
-	private int port;
-	public static String serverTime;
-
-	ActionListener listener = new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-
-			String cmd = e.getActionCommand();
-
-			switch( cmd ) {
-			case "startServer": case "port":
-				StartServer();
-				btnStop.grabFocus();
+	//GUI변수
+	private JFrame f;							//전체 프레임
+	private JButton btnOn, btnOff;				//btnOn: 서버켜기 btn2: 서버끄기
+	private JTextField tfPort;					//port번호 기입
+	private JTextArea taLog;					//textArea: Log 기록창
+	//객체 변수
+	private ChatServerThread serverThread;		//서버스레드 객체. 전달용
+	
+	public String serverChat = " ";
+	ActionListener listener = new ActionListener(){
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			String cmd = arg0.getActionCommand();
+			switch(cmd){
+			case "a":
+				startServer();
 				break;
-			case "stopServer":
-				stopServer(SERVER_STATE_STOP);
-				break;
-			case "F1":
-				getServerIP();
+			case "b":
+				stopServer();
 				break;
 			}
-
 		}
 	};
 
-	// 생성자
+	//listener 'a' cmd에 따른 서버켜기 기능 구현 메소드
+	//숫자 이외를 입력하거나  port가 공란일 경우 exception의 초기 port 번호로 server에 port 오픈.
+	//숫자를 기존의 port 번호 등에 연결하거나 숫자가 0~65535 범위가 넘어 가는 등 int 내에서의 오류는 따로 잡아주지 않으므로 유의할 것.
+	void startServer(){
+		try{
+			int port = Integer.parseInt(tfPort.getText());
+			serverThread = new ChatServerThread(this, port);
+			new Thread( serverThread ).start();	//ChatServerThread는 Runnable로 구현
+		}catch(NumberFormatException e){
+			addLog("You typed wrong format port. It will connect with default value.");
+			serverThread = new ChatServerThread(this, 12345);	
+			new Thread( serverThread ).start();
+		}
+	}
+
+	//서버가 켜짐에 따라 프레임에 있는 버튼 변화 메소드
+	void buttonOnState(){
+		btnOn.setEnabled(false);
+		btnOff.setEnabled(true);
+	}
+
+	//listener 'b' cmd에 따른 서버 끄기 기능 구현 메소드.
+	void stopServer(){
+		serverThread.stopServerSocket();
+		btnOn.setEnabled(true);
+		btnOff.setEnabled(false);
+	}
+
+	void addLog(String msg){
+		taLog.append(msg + "\n");
+		if(!msg.equals(null)){  // @요한
+			serverChat += String.format("%s \n", msg);
+			}
+		int length = taLog.getText().length(); 
+		taLog.setCaretPosition(length);
+	}
+
 	public ChatServer() {
 		initGUI();
-		getServerIP();
 	}
-	// 서버를 정지하거나 껐을 때 호출.
-	private void stopServer(int state) {
-
-		String msg = String.format("%s# 서버가 정지되었습니다.", serverTime);
-
-		if( state == SERVER_STATE_STOP ) {
-			char protocol = 'Z';
-			int command = -4;
-			serverThread.sendAdminMessage( protocol, command, msg );
-			serverThread.stopServer();
-			serverThread = null;
-		} else if( state == SERVER_STATE_EXIT) {
-			System.exit(0);
-		}
-
+	
+	public String myLog(){//@요한
+		
+		return serverChat; 
 	}
-	// 시간을 남겨보자.
-	public void setServerTime(){
 
-		GregorianCalendar cal = new GregorianCalendar();
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		String time = sdf.format(cal.getTime());
-		serverTime = "["+time+"]";
+	void initGUI(){
+		f = new JFrame("Server Screen");//서버 프레임
+		f.setBounds(100, 100, 500, 500);
+		JPanel p1 = new JPanel(new GridLayout(1,2));	//켜고 끄는 버튼 panel
+		JPanel p2 = new JPanel(new BorderLayout()); 	//켜고 끄는 버튼 panel + port입력 textfield
 
-	}
-	// server log 메시지 띄우는 메서드.
-	public void appendServerLog( String msg ) {
-		setServerTime();
-		int length = taServerLog.getText().length();
-		taServerLog.append(serverTime + msg + "\n");
-		// 자동 스크롤링
-		taServerLog.setCaretPosition( length );
+		btnOn = new JButton("TurnOn");
+		btnOn.setActionCommand("a");
+		btnOn.addActionListener(listener);
+		btnOff = new JButton("TurnOff");
+		btnOff.setActionCommand("b");
+		btnOff.addActionListener(listener);
+		btnOff.setEnabled(false);
+		p1.add(btnOn);
+		p1.add(btnOff);
+		p2.add("West",new JLabel("Port"));
 
-	}
-	// server의 IP 받아서  출력하는 메서드.
-	private void getServerIP() {
 
-		try {
-			String ip = InetAddress.getLocalHost().getHostAddress();
-			appendServerLog("Server IP :" + ip);
-		} catch (UnknownHostException e) {
-			appendServerLog("서버 IP를 읽어올 수 없습니다. :" + e);
-		}  
+		tfPort = new JTextField(10);
+		tfPort.setToolTipText("Port number can be between 0 to 65535.");
+		p2.add("Center",tfPort);
 
-	}
-	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
-	public void controlStopButton(boolean state) {
-		btnStart.setEnabled(!state);
-		btnStop.setEnabled(state);
-		tfPort.setEnabled(!state);
-	}
-	// start 버튼 눌렸을 때 동작할 메서드.
-	private void StartServer() {
 
-		port = 12345;
-		String inputPort = tfPort.getText();
+		f.add("South", p1);
 
-		// 입력된 port가 잘못되었을 때 처리.
-		if( inputPort != null && !"".equals(inputPort) ) {
-			try {
-				port = Integer.parseInt(inputPort);
-				if( port < 1 || port > 65535) {
-					throw new NumberFormatException();
-				}
-				appendServerLog("서버 Port : " + port);
-
-			} catch( NumberFormatException e ) {
-				appendServerLog("잘못된 입력입니다.");
-				tfPort.selectAll();
-				tfPort.grabFocus();
-
-				return;
-			} 
-		}
-
-		serverThread = new ServerThread( this );
-		new Thread(serverThread).start();
-
-	}
-	// GUI 초기화.
-	private void initGUI() {
-
-		f = new JFrame("Chat Server");
-		f.setBounds(0, 0, 500, 600);
-		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {stopServer(SERVER_STATE_EXIT);}
-		});
-
-		mainPanel = new JPanel( new BorderLayout() );
-		nPanel = new JPanel( new BorderLayout() );
-		cPanel = new JPanel( new BorderLayout() );
-		sPanel = new JPanel( new GridLayout(2, 2));
-		sPanelCenter = new JPanel( new GridLayout(1, 4) );
-		sPanelSouth = new JPanel( new GridLayout(1, 2) );
-
-		// main
-		f.add(mainPanel);
-		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		// main.north
-		mainPanel.add(nPanel, "North");
-		nPanel.add(new JLabel("Port : "), "West");
-		tfPort = new JTextField("12345");
-		tfPort.setActionCommand("port");
-		tfPort.addActionListener(listener);
-		nPanel.add(tfPort, "Center");
-		// main.center
-		mainPanel.add(cPanel, "Center");
-		cPanel.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createLineBorder(Color.BLACK),
-				"server log", TitledBorder.CENTER,TitledBorder.CENTER)));
-		taServerLog = new JTextArea();
-		taServerLog.setEditable(false);
-		spServerLog = new JScrollPane(taServerLog);
-		cPanel.add(spServerLog, "Center");
-		// main.south
-		mainPanel.add(sPanel, "South");
-		sPanel.add(sPanelCenter, "Center");
-		btnFunction1 = new JButton("fun1");
-		btnFunction2 = new JButton("fun2");
-		btnFunction3 = new JButton("fun3");
-		btnFunction4 = new JButton("fun4");
-		btnFunction1.setActionCommand("F1");
-		btnFunction2.setActionCommand("F2");
-		btnFunction3.setActionCommand("F3");
-		btnFunction4.setActionCommand("F4");
-		btnFunction1.addActionListener(listener);
-		btnFunction2.addActionListener(listener);
-		btnFunction3.addActionListener(listener);
-		btnFunction4.addActionListener(listener);
-		btnFunction2.setEnabled(false);
-		btnFunction3.setEnabled(false);
-		btnFunction4.setEnabled(false);
-		sPanelCenter.add(btnFunction1);
-		sPanelCenter.add(btnFunction2);
-		sPanelCenter.add(btnFunction3);
-		sPanelCenter.add(btnFunction4);
-		btnStart = new JButton("start");
-		btnStop = new JButton("stop");
-		btnStart.setActionCommand("startServer");
-		btnStop.setActionCommand("stopServer");
-		btnStart.addActionListener(listener);
-		btnStop.addActionListener(listener);
-		btnStop.setEnabled(false);
-		sPanel.add(sPanelSouth, "South");
-		sPanelSouth.add(btnStart);
-		sPanelSouth.add(btnStop);
-
+		f.add("North",p2);
+		taLog = new JTextArea();
+		taLog.setEditable(false);
+		f.add("Center",new JScrollPane(taLog));
 		f.setVisible(true);
-
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//frame close. 메소드는 만들었지만 아직 연결하지 않음.
 	}
-	// main method
+
 	public static void main(String[] args) {
-
 		new ChatServer();
-
-	}
-
-	// 다른 클래스에서 맴버에 접근하기 위한 getter와 setter.
-	public JFrame getF() {
-		return f;
-	}
-	public void setF(JFrame f) {
-		this.f = f;
-	}
-	public JPanel getMainPanel() {
-		return mainPanel;
-	}
-	public void setMainPanel(JPanel mainPanel) {
-		this.mainPanel = mainPanel;
-	}
-	public JPanel getnPanel() {
-		return nPanel;
-	}
-	public void setnPanel(JPanel nPanel) {
-		this.nPanel = nPanel;
-	}
-	public JPanel getcPanel() {
-		return cPanel;
-	}
-	public void setcPanel(JPanel cPanel) {
-		this.cPanel = cPanel;
-	}
-	public JPanel getsPanel() {
-		return sPanel;
-	}
-	public void setsPanel(JPanel sPanel) {
-		this.sPanel = sPanel;
-	}
-	public JPanel getsPanelCenter() {
-		return sPanelCenter;
-	}
-	public void setsPanelCenter(JPanel sPanelCenter) {
-		this.sPanelCenter = sPanelCenter;
-	}
-	public JPanel getsPanelSouth() {
-		return sPanelSouth;
-	}
-	public void setsPanelSouth(JPanel sPanelSouth) {
-		this.sPanelSouth = sPanelSouth;
-	}
-	public JTextArea getTaServerLog() {
-		return taServerLog;
-	}
-	public void setTaServerLog(JTextArea taServerLog) {
-		this.taServerLog = taServerLog;
-	}
-	public JTextField getTfPort() {
-		return tfPort;
-	}
-	public void setTfPort(JTextField tfPort) {
-		this.tfPort = tfPort;
-	}
-	public JScrollPane getSpServerLog() {
-		return spServerLog;
-	}
-	public void setSpServerLog(JScrollPane spServerLog) {
-		this.spServerLog = spServerLog;
-	}
-	public JButton getBtnStart() {
-		return btnStart;
-	}
-	public void setBtnStart(JButton btnStart) {
-		this.btnStart = btnStart;
-	}
-	public JButton getBtnStop() {
-		return btnStop;
-	}
-	public void setBtnStop(JButton btnStop) {
-		this.btnStop = btnStop;
-	}
-	public JButton getBtnFunction1() {
-		return btnFunction1;
-	}
-	public void setBtnFunction1(JButton btnFunction1) {
-		this.btnFunction1 = btnFunction1;
-	}
-	public JButton getBtnFunction2() {
-		return btnFunction2;
-	}
-	public void setBtnFunction2(JButton btnFunction2) {
-		this.btnFunction2 = btnFunction2;
-	}
-	public JButton getBtnFunction3() {
-		return btnFunction3;
-	}
-	public void setBtnFunction3(JButton btnFunction3) {
-		this.btnFunction3 = btnFunction3;
-	}
-	public JButton getBtnFunction4() {
-		return btnFunction4;
-	}
-	public void setBtnFunction4(JButton btnFunction4) {
-		this.btnFunction4 = btnFunction4;
-	}
-	public ServerThread getsThread() {
-		return serverThread;
-	}
-	public void setsThread(ServerThread sThread) {
-		this.serverThread = sThread;
-	}
-	public int getPort() {
-		return port;
-	}
-	public void setPort(int port) {
-		this.port = port;
-	}
-	public ActionListener getListener() {
-		return listener;
-	}
-	public void setListener(ActionListener listener) {
-		this.listener = listener;
 	}
 
 }
