@@ -51,7 +51,7 @@ public class ChatClient {
 			case "C":				
 				changeNickName();
 				break;
-			case "D" :  //@요한
+			case "0" :  //@요한
 				serverLogDown();//@요한 
 				break; 
 			}
