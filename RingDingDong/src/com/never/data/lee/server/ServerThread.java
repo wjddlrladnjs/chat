@@ -36,7 +36,7 @@ public class ServerThread implements  Runnable {
 		comList.remove(com); //리무브 (오브젝트 )
 	}
 
-	public void sendOneMessage(Com comme,String name ,String pName , String msg){ //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	public void sendOneMessage(Com comme,String name ,String pName , String msg){   //@요한
 		Com com = null ; //에러떨어질까봐 
 		for(int  i = 0 ; i <comList.size() ; i ++){ //for: 은 무조건다돌고  ;; 은 돌다가나올수있으니 하다나올거면 ;;사용
 			com = comList.get(i);// 컴리스트에있는것을 . 겟 한다 (i번째껄)
@@ -48,7 +48,7 @@ public class ServerThread implements  Runnable {
 		}
 		
 		if(com != null){
-			comme.sendMessage('M', pName+" 님 에게 : "+msg);//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			comme.sendMessage('M', pName+" 님 에게 : "+msg);
 			com.sendMessage('M',name+" 님의 귓속말 :" +msg);
 		}
 		
