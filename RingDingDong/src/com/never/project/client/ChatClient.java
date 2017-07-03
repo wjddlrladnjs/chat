@@ -42,6 +42,7 @@ import com.never.data.jung.chat.client.ClientReadThread;
 
 
 public class ChatClient {
+	
 	//GUI 변수
 	private JFrame f;
 	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
@@ -376,7 +377,7 @@ public class ChatClient {
 
 
 	//user의 window창 종료로 인한 퇴장시 적용 메소드
-	void exitClient(){
+	void exitClient(int state){
 		
 		model.clear();
 		changeButton(false);
@@ -392,7 +393,11 @@ public class ChatClient {
 
 			}
 		}
-		System.exit(0);
+		// 종료인지 접속 종료인지 판단.
+		if( state == 0 ) {
+			// X 버튼이면 다 닫고 종료.
+			System.exit(0);
+		}
 	}	
 
 	//대화명 변경시 유효성 검사 메소드
@@ -448,16 +453,7 @@ public class ChatClient {
 	// 서버와 접속을 종료하는 메서드.
 	private void disconnectServer() {
 
-		doExitEvent(5);
-	}
-	public void doExitEvent(int state) {
-		// 종료인지 접속 종료인지 판단.
-		if( state == 0 ) {
-			// X 버튼이면 다 닫고 종료.
-			
-			System.exit(0);
-		}
-		exitClient();
+		exitClient(33);
 	}
 	//GUI 구현 메소드
 	//GUI 구현 메소드
@@ -469,7 +465,7 @@ public class ChatClient {
 		f.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				// 클라 종료 메서드 호출. 인자 0은 종료.
-				exitClient()
+				exitClient(0)
 				;}
 		});
 
