@@ -138,11 +138,11 @@ public class ChatServerThread implements Runnable{
 	
 	void stopServerSocket(){
 		onAir = false;
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			chatServer.addLog("[class]ServerThread [method]stopServerSocket "+e);
-		}
+//		try {
+//			//serverSocket.close();
+//		} catch (IOException e) {
+//			chatServer.addLog("[class]ServerThread [method]stopServerSocket "+e);
+//		}
 	}
 
 }

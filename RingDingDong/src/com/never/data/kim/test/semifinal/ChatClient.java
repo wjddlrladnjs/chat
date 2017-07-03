@@ -1,6 +1,7 @@
 package com.never.data.kim.test.semifinal;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -17,7 +18,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -35,7 +38,7 @@ public class ChatClient {
 	//GUI 변수
 	private JFrame f;
 	private JTextField tfIP, tfPort, tfName, tfText;
-	private JTextArea taLog;
+	private JTextArea taLog1;
 	private JButton btn1, btn2, btnName, btnServerLog, btnImgBg;
 	private JList<String> list;
 	private DefaultListModel<String> model;
@@ -51,6 +54,38 @@ public class ChatClient {
 	FileInputStream fis = null;
 	FileOutputStream fos = null;
 	
+	MyTextArea taLog;// = new MyTextArea();	//위의 JTextArea를 대신함
+	
+	/////이미지 출력을 위한 커스텀 textArea
+	class MyTextArea extends JTextArea{
+		private Image backgroundImage;
+		
+		public MyTextArea(){
+			super();
+			//setOpaque = false;
+		}
+		
+		public void setBackgroundImage(Image image){
+			this.backgroundImage = image;
+			this.repaint();
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			g.setColor(getBackground());
+			g.fillRect(0, 0, getWidth(), getHeight());
+			
+			if(backgroundImage != null){
+				g.drawImage(backgroundImage,  0,  0,  this);
+			}
+			
+			super.paintComponent(g);
+		}
+		
+		
+		
+		
+	}
 
 	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
@@ -122,6 +157,7 @@ public class ChatClient {
 		int length = 0;	//파일의 크기
 		String fileName = "";
 		byte[] brr = null; //데이타가 들어갈 배열
+		
 		try {
 			fis = new FileInputStream(file);
 			addLog("파일이 인풋스트림에 들어왔습니다.");
@@ -165,6 +201,19 @@ public class ChatClient {
 			addLog("파일 출력 에라: " + e);
 		} catch (IOException e) {
 			addLog("I/O 에러: " + e);
+		}
+		
+	}
+	
+	void setThisImageAsBackground(byte[] bytes){
+		addLog("나 아직 안끝났어!");
+		
+		DataInputStream dis = null;
+		ImageIcon icon = new ImageIcon(bytes);
+		Image image = icon.getImage();
+		
+		if(image != null){
+			taLog.setBackgroundImage(image);
 		}
 		
 	}
@@ -399,7 +448,8 @@ public class ChatClient {
 
 
 		f.add("North",p4);
-		taLog = new JTextArea();		
+//		taLog = new JTextArea();		
+		taLog = new MyTextArea();
 		f.add("Center", new JScrollPane(taLog));
 		taLog.setEditable(false);
 		f.add("East", p8);

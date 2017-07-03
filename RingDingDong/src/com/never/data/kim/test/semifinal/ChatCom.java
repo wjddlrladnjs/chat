@@ -140,9 +140,9 @@ public class ChatCom implements Runnable{
 
 					bytes = new byte[length];
 
-					dis.read(bytes, 0, length);
+					dis.readFully(bytes, 0, length);
 					System.out.println("받기 byte : " + bytes.length);
-
+					
 
 					System.out.println("받기 complete");
 					server.addLog(String.format("%s 에게서 파일을 받았습니다."

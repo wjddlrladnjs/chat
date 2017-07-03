@@ -45,6 +45,9 @@ public class ChatReadThread extends Thread{
 					break;
 				case 'i':
 					chatClient.addLog("서버에서 프로토콜 i를 받았습니다. ");
+					
+					
+					
 					byte[] bytes = null;
 					String str = dis.readUTF();
 					int length = dis.readInt();
@@ -53,7 +56,7 @@ public class ChatReadThread extends Thread{
 					
 					chatClient.addLog("파일을 받았습니다. 배경화면으로 설정합니다.");
 					
-					//setThisImageAsBackground();
+					chatClient.setThisImageAsBackground(bytes);
 					break;
 				}
 			}
