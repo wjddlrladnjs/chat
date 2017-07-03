@@ -8,8 +8,8 @@ import java.util.Calendar;
 
 public class LogDown extends Thread{
 	String logdata  ;
-	ChatCilent Cilent;
-	public LogDown(ChatCilent Cilent, String logdata) {
+	ChatClient Cilent;
+	public LogDown(ChatClient Cilent, String logdata) {
 		this.logdata = logdata;
 		this.Cilent = Cilent;
 	}
@@ -38,7 +38,7 @@ public class LogDown extends Thread{
 		if(!f3.exists()){
 			f3.mkdir();
 		}
-		File f4 = new File(f3, Cilent.name+"_"+fileName+".txt");
+		File f4 = new File(f3, /*Cilent.name+*/"_"+fileName+".txt");
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(f4);
@@ -53,7 +53,7 @@ public class LogDown extends Thread{
 			}
 			}
 		}
-		Cilent.addChatList("다운로드완료   위치 :  c:\\chatlog\\logDownlod");
+		Cilent.addLog("다운로드완료   위치 :  c:\\chatlog\\logDownlod");
 		
 	}
 

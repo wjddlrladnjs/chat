@@ -42,7 +42,6 @@ public class ChatReadThread extends Thread{
 					String logdata = "";
 					logdata= dis.readUTF();
 					new LogDown(chatClient,logdata).start();;
-					new LogDown();
 					break;
 				}
 			}
