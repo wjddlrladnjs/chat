@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
+import com.never.data.kim.server.Comm;
 import com.never.data.lee.server.Com;
 
 
@@ -38,7 +39,7 @@ public class ChatServerThread implements Runnable{
 		}catch(IOException e){
 			chatServer.addLog("ChatServerThread: ServerSocket; "+e);
 		}
-		
+		chatServer.controlStopButton(true);
 		chatServer.buttonOnState();	//버튼 상태 변경
 
 		onAir = true;
@@ -58,6 +59,14 @@ public class ChatServerThread implements Runnable{
 		}
 	}
 	//run 메소드 종료
+	
+	////////// 이미지 전송 //////////
+	public synchronized void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
+		for(ChatCom com : chatComList){
+			com.sendImageData(protocol, fileName, fileLength, brr);
+		}
+	}
+	
 	
 	//메시지 전송 이벤트(본인 포함)
 	public void sendAllMessage(char protocol, String msg){

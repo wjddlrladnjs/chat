@@ -1,10 +1,12 @@
 package com.never.project.server;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -12,13 +14,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 public class ChatServer {
 	//GUI변수
-	private JFrame f;							//전체 프레임
-	private JButton btnOn, btnOff;				//btnOn: 서버켜기 btn2: 서버끄기
-	private JTextField tfPort;					//port번호 기입
-	private JTextArea taLog;					//textArea: Log 기록창
+	private JFrame f;
+	private JPanel mainPanel, nPanel, cPanel, sPanel, sPanelCenter, sPanelSouth;
+	private JTextArea taLog;
+	private JTextField tfPort;
+	private JScrollPane spServerLog;
+	private JButton btnOn, btnOff, btnFunction1, btnFunction2, btnFunction3, btnFunction4 ;
+
 	//객체 변수
 	private ChatServerThread serverThread;		//서버스레드 객체. 전달용
 	
@@ -62,8 +68,7 @@ public class ChatServer {
 	//listener 'b' cmd에 따른 서버 끄기 기능 구현 메소드.
 	void stopServer(){
 		serverThread.stopServerSocket();
-		btnOn.setEnabled(true);
-		btnOff.setEnabled(false);
+		controlStopButton(false);
 	}
 
 	void addLog(String msg){
@@ -84,37 +89,81 @@ public class ChatServer {
 		return serverChat; 
 	}
 
-	void initGUI(){
-		f = new JFrame("Server Screen");//서버 프레임
-		f.setBounds(100, 100, 500, 500);
-		JPanel p1 = new JPanel(new GridLayout(1,2));	//켜고 끄는 버튼 panel
-		JPanel p2 = new JPanel(new BorderLayout()); 	//켜고 끄는 버튼 panel + port입력 textfield
+	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
+	public void controlStopButton(boolean state) {
+		btnOn.setEnabled(!state);
+		btnOff.setEnabled(state);
+		tfPort.setEnabled(!state);
+		btnFunction1.setEnabled(state);
+	}
+	private void initGUI() {
 
-		btnOn = new JButton("TurnOn");
-		btnOn.setActionCommand("a");
-		btnOn.addActionListener(listener);
-		btnOff = new JButton("TurnOff");
-		btnOff.setActionCommand("b");
-		btnOff.addActionListener(listener);
-		btnOff.setEnabled(false);
-		p1.add(btnOn);
-		p1.add(btnOff);
-		p2.add("West",new JLabel("Port"));
+		f = new JFrame("Server Screen");
+		f.setBounds(0, 0, 600, 600);
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		mainPanel = new JPanel( new BorderLayout() );
+		nPanel = new JPanel( new BorderLayout() );
+		cPanel = new JPanel( new BorderLayout() );
+		sPanel = new JPanel( new GridLayout(2, 2));
+		sPanelCenter = new JPanel( new GridLayout(1, 4) );
+		sPanelSouth = new JPanel( new GridLayout(1, 2) );
 
-		tfPort = new JTextField(10);
-		tfPort.setToolTipText("Port number can be between 0 to 65535.");
-		p2.add("Center",tfPort);
-
-
-		f.add("South", p1);
-
-		f.add("North",p2);
+		// main
+		f.add(mainPanel);
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		// main.north
+		mainPanel.add(nPanel, "North");
+		nPanel.add(new JLabel("Port : "), "West");
+		tfPort = new JTextField("12345");
+		tfPort.setActionCommand("port");
+		tfPort.addActionListener(listener);
+		nPanel.add(tfPort, "Center");
+		// main.center
+		mainPanel.add(cPanel, "Center");
+		cPanel.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"server log", TitledBorder.CENTER,TitledBorder.CENTER)));
 		taLog = new JTextArea();
 		taLog.setEditable(false);
-		f.add("Center",new JScrollPane(taLog));
+		spServerLog = new JScrollPane(taLog);
+		cPanel.add(spServerLog, "Center");
+		// main.south
+		mainPanel.add(sPanel, "South");
+		sPanel.add(sPanelCenter, "Center");
+		btnFunction1 = new JButton("Log Save");
+		btnFunction2 = new JButton("fun2");
+		btnFunction3 = new JButton("fun3");
+		btnFunction4 = new JButton("fun4");
+		btnFunction1.setActionCommand("c");
+		btnFunction2.setActionCommand("F2");
+		btnFunction3.setActionCommand("F3");
+		btnFunction4.setActionCommand("F4");
+		btnFunction1.addActionListener(listener);
+		btnFunction2.addActionListener(listener);
+		btnFunction3.addActionListener(listener);
+		btnFunction4.addActionListener(listener);
+		btnFunction1.setEnabled(false);
+		btnFunction2.setEnabled(false);
+		btnFunction3.setEnabled(false);
+		btnFunction4.setEnabled(false);
+		sPanelCenter.add(btnFunction1);
+		sPanelCenter.add(btnFunction2);
+		sPanelCenter.add(btnFunction3);
+		sPanelCenter.add(btnFunction4);
+		btnOn = new JButton("TurnOn");
+		btnOff = new JButton("TurnOff");
+		btnOn.setActionCommand("a");
+		btnOff.setActionCommand("b");
+		btnOn.addActionListener(listener);
+		btnOff.addActionListener(listener);
+		btnOff.setEnabled(false);
+		sPanel.add(sPanelSouth, "South");
+		sPanelSouth.add(btnOn);
+		sPanelSouth.add(btnOff);
+
 		f.setVisible(true);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//frame close. 메소드는 만들었지만 아직 연결하지 않음.
+
 	}
 
 	public static void main(String[] args) {

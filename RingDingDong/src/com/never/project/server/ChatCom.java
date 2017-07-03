@@ -2,9 +2,13 @@ package com.never.project.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+
+import com.never.data.kim.server.BgrImage;
 
 public class ChatCom implements Runnable{
 	//객체변수
@@ -18,7 +22,12 @@ public class ChatCom implements Runnable{
 	private boolean onAir;					//스레드의 연속/정지를 위한 boolean 변수
 	private static int myCount = 0;				//ArrayList에 저장된 이름의 위치를 확인 하기 위한 이름 위치값 int 변수
 	String name = "";				//사용자 대화명 저장을 위한 string name 변수
-	public static ArrayList<String> userName = new ArrayList<>();	//사용자 대화명 저장을 위한 ArrayList	
+	public static ArrayList<String> userName = new ArrayList<>();	//사용자 대화명 저장을 위한 ArrayList
+
+	//이미지 변수 test
+	FileInputStream fis = null;
+	FileOutputStream fos = null;
+	BgrImage bgrImg;
 
 	public ChatCom(ChatServerThread serverThread, ChatServer server, Socket socket) {
 		this.serverThread = serverThread;
@@ -100,6 +109,50 @@ public class ChatCom implements Runnable{
 					serverThread.sendOneMessage(this,name,pName,msg,userName);
 					
 					break;
+					
+
+					///이미지
+				case 'i':
+					//클라서 서버로 보내는 프로토콜
+					//dos.writeChar('i');
+					//dos.writeUTF(fileName);
+					//dos.writeInt(length);
+					//fos.write(brr);
+					byte[] bytes = null;
+					server.addLog("프로토콜 i를 받았습니다.");
+
+					//thread.startImgReceiveThread(this); //쓰레드한테 옮겨서 Comm과 별개의 I/O로 작동을 하도록!
+					//
+					//						bgrImg = new BgrImage(server, thread, this, s);
+					//						bgrImg.start(); //데이터 파일로 변환한다음 각각 클라에 쏘는거
+					//						server.addChatAlert("이미지 보내기용 쓰레드를 생성합니다.");
+					//						break;
+
+					//클라이언트에 서버소켓을 열어서 서버랑 통신할떄 io 붙으라고함
+					String str = dis.readUTF();
+					System.out.println("받기 utf : " + str);
+					int length = dis.readInt();
+					System.out.println("받기 int : " + length);
+
+
+					char ch = dis.readChar();
+					System.out.println("받기 char: " +ch);
+
+					bytes = new byte[length];
+
+					dis.read(bytes, 0, length);
+					System.out.println("받기 byte : " + bytes.length);
+
+
+					System.out.println("받기 complete");
+					server.addLog(String.format("%s 에게서 파일을 받았습니다."
+							+ "파일명 : %s, 크기: %d", this.name, str, length));
+
+					//이제 쓰자
+					sendImageData('i', str, length, bytes);
+
+					serverThread.sendImageData2All('i', str, length, bytes);
+					break;
 				}
 			} catch (IOException e) {
 				server.addLog("[class]ChatCom [method] run2 "+e);
@@ -107,6 +160,22 @@ public class ChatCom implements Runnable{
 		}
 	}
 	//run method end
+	
+	//이미지 파일 보내는 메소드
+		public void sendImageData(char protocol, String fileName, int imgSize, byte[] imgData){
+			try{
+				dos.writeChar(protocol);	//프로토콜보내고 그담에메세지보내
+				dos.flush();	//live한 data들이 좀 빨리감. 없으면 살짝 딜레이생김
+				dos.writeUTF(fileName);
+				dos.flush();
+				dos.writeInt(imgSize);
+				dos.flush();
+				dos.write(imgData);
+				dos.flush();
+			}catch(IOException e){
+				server.addLog("send Error: " + e);
+			}
+		}
 
 	public void sendMessage(char protocol, String msg){
 		try {
