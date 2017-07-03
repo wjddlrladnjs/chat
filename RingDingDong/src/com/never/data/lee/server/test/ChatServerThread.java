@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
+import com.never.data.lee.server.Com;
+
 
 public class ChatServerThread implements Runnable{
 	//객체 변수
@@ -80,6 +82,25 @@ public class ChatServerThread implements Runnable{
 				com.sendMessage(protocol, msg);
 			}
 		}
+	}
+	
+	public void sendOneMessage(ChatCom comme,String name ,String pName , String msg){ 
+		ChatCom com = null ; //에러떨어질까봐 
+		for(int  i = 0 ; i <chatComList.size() ; i ++){ //for: 은 무조건다돌고  ;; 은 돌다가나올수있으니 하다나올거면 ;;사용
+			com = chatComList.get(i);// 컴리스트에있는것을 . 겟 한다 (i번째껄)
+			if(com.name.equals(pName)){
+				
+				
+				break;
+			}
+		}
+		
+		if(com != null){
+			comme.sendMessage('M', pName+" 님 에게 : "+msg);
+			com.sendMessage('M',name+" 님의 귓속말 :" +msg);
+		}
+		
+		
 	}
 	
 

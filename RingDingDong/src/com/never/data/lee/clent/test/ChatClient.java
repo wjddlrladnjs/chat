@@ -110,19 +110,33 @@ public class ChatClient {
 
 	//서버로 메세지 전송 메소드
 	void sendMessage(){
+		String rName ; 
+		String text = tfText.getText();	//@요한
+		if(!text.equals("exit")){
+			rName =list.getSelectedValue();
 		try{
 			if(!tfText.getText().equals(null)){		
-				String text = tfText.getText();	
+				if(rName == null){
 				dos.writeChar('M');
+				dos.flush();
+				}else{
+					dos.writeChar('5');
+					dos.flush();
+					dos.writeUTF(rName);
+					dos.flush();
+				}
 				dos.writeUTF(text);
 				dos.flush();
 
-				tfText.setText("");				
 			}
 		}catch(IOException e){
 			addLog("sendMessage IOException"+e);
 			tfText.setText("");
 		}
+		}else if(text.equals("exit")){
+			list.clearSelection();
+		}
+		tfText.setText("");				
 	}
 
 

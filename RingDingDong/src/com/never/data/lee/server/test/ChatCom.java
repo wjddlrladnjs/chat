@@ -93,6 +93,13 @@ public class ChatCom implements Runnable{
 					serverThread.sendOnlyOne('2', log, this);
 					
 					break;
+				case '5':
+					String pName = dis.readUTF(); //이름받아옴 
+					msg = dis.readUTF();
+					server.addLog(name + " 님이"+pName+" 에게 "+msg+"라고 귓속말을보냄");
+					serverThread.sendOneMessage(this,name,pName,msg);
+					
+					break;
 				}
 			} catch (IOException e) {
 				server.addLog("[class]ChatCom [method] run2 "+e);

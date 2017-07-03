@@ -109,7 +109,7 @@ public class ChatCilent {
 		if(msg.length()==0){
 			return ;
 		}
-		if(!msg.endsWith("exit")){//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		if(!msg.equals("exit")){//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 			 
 		rName = list.getSelectedValue();    //get,selet 선택된것  . 모델에는 데이터가 선택된게없네?   그럼 리스트를보자  getSelectedValue  선택하면 그값을보여준다 
 		try{
