@@ -18,7 +18,7 @@ public class ChatCom implements Runnable{
 	private boolean onAir;					//스레드의 연속/정지를 위한 boolean 변수
 	private static int myCount = 0;				//ArrayList에 저장된 이름의 위치를 확인 하기 위한 이름 위치값 int 변수
 	String name = "";				//사용자 대화명 저장을 위한 string name 변수
-	static ArrayList<String> userName = new ArrayList<>();	//사용자 대화명 저장을 위한 ArrayList	
+	public static ArrayList<String> userName = new ArrayList<>();	//사용자 대화명 저장을 위한 ArrayList	
 
 	public ChatCom(ChatServerThread serverThread, ChatServer server, Socket socket) {
 		this.serverThread = serverThread;
@@ -97,7 +97,7 @@ public class ChatCom implements Runnable{
 					String pName = dis.readUTF(); //이름받아옴 
 					msg = dis.readUTF();
 					server.addLog(name + " 님이"+pName+" 에게 "+msg+"라고 귓속말을보냄");
-					serverThread.sendOneMessage(this,name,pName,msg);
+					serverThread.sendOneMessage(this,name,pName,msg,userName);
 					
 					break;
 				}
