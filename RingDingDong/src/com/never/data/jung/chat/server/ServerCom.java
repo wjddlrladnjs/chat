@@ -150,7 +150,8 @@ public class ServerCom implements Runnable {
 
 			// 서버에 접속한 클라가 받게 되는 데이터.
 			protocol = 'M'; // 전체 메시지 프로토콜
-			serverThread.sendAllMessage( protocol , String.format("%s# %s님 입장 ~ ! %s -admin-", ChatServer.serverTime, clientName, adminComment));
+			serverThread.sendAllMessage( protocol , String.format("%s# %s님 입장 ~ ! %s -admin-",
+											ChatServer.serverTime, clientName, adminComment));
 			protocol = 'N'; // 클라 이름 프로토콜
 			sendNickname( protocol, clientName );
 			serverThread.sendClientNamelist(this);

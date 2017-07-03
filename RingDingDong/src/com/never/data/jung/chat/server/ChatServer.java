@@ -64,6 +64,7 @@ public class ChatServer {
 	public ChatServer() {
 		initGUI();
 		getServerIP();
+		initChatCommand();
 	}
 	// 서버에 등록된 명령어 모음을 저장한다.
 	private void initChatCommand() {
