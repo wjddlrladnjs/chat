@@ -9,8 +9,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -46,8 +50,9 @@ public class ChatClient {
 	private String nickname;
 	private DefaultListModel<String> model;
 	private JList<String> clientList;
+	private HashMap<String, String> chatCommand;
 
-	ActionListener listener = new ActionListener() {
+	private ActionListener listener = new ActionListener() {
 
 		public void actionPerformed(ActionEvent e) {
 			
@@ -172,11 +177,27 @@ public class ChatClient {
 		}
 		
 	}
+	// 명령어 전송 메소드.
+	private void chatCommandEvent(String command) {
+		
+		chatCommand.put("w", "W");
+
+		String result = "";
+		String inputKey = command.substring(1,2);
+		
+		result = chatCommand.get(inputKey);
+		if( result == null ) {
+			result = "잘못된 명령입니다.";
+			appendClientLog(result);
+		}
+		
+	}
 	// 메시지 전송을 위한 메서드.
 	private void sendMessage() {
 
 		String msg = tfMessage.getText();
 		tfMessage.setText("");
+		
 		String tagetClient = clientList.getSelectedValue();
 		
 		if( msg.length() == 0 ) {
@@ -192,6 +213,11 @@ public class ChatClient {
 			sendWhisperMessage(tagetClient, msg);
 			return;
 		}
+		if( msg.charAt(0) == '/' ) {
+			chatCommandEvent(msg);
+			return;
+		}
+		
 		try {
 			dos.writeChar('M');
 			dos.flush();
@@ -356,12 +382,16 @@ public class ChatClient {
 		nPanelCenter.add(nPanelCenterLeft);
 		nPanelCenterLeft.add(new JLabel("IP : "), "West");
 		tfIP = new JTextField("1.1.1.6", 10);
+		tfIP.setActionCommand("connection");
+		tfIP.addActionListener(listener);
 		nPanelCenterLeft.add(tfIP, "Center");
 		nPanelCenter.add(nPanelCenterRight);
 		nPanelCenterRight.add(new JLabel("Port : "), "West");
 		nPanelCenter.add(nPanelCenterRight);
 		tfPort = new JTextField("12345", 10);
 		nPanelCenterRight.add(tfPort, "Center");
+		tfPort.setActionCommand("connection");
+		tfPort.addActionListener(listener);
 		nPanelCenter.add(nPanelCenterRight);
 		mainPanel.add(nPanel, "North");
 
@@ -728,6 +758,41 @@ public class ChatClient {
 	}
 	public void setModel(DefaultListModel<String> model) {
 		this.model = model;
+	}
+	public void getChatCommand(ClientReadThread clientReadThread) {
+		
+		FileOutputStream fos = null;
+		ObjectInputStream ois = null;
+		HashMap<String, String> temp = null;
+		
+		try {
+			int size = dis.readInt();
+			byte[] data = new byte[size];
+			dis.readFully(data, 0, size);
+			fos = new FileOutputStream("hash.map");
+			fos.write(data, 0, size);
+			fos.flush();
+			
+			ois = new ObjectInputStream(new FileInputStream("hash.map"));
+			Object obj = ois.readObject();
+			if( obj instanceof HashMap ) {
+				temp = (HashMap) obj;
+			}
+			appendClientLog("받은 명령어" + temp.toString());
+			
+		} catch( IOException e ) {
+			appendClientLog("객체 받기 애러" + e.toString());
+		} catch (ClassNotFoundException e) {
+			appendClientLog("받은 객체가 받을 객체와 다름" + e.toString());
+		} finally {
+			if( fos != null ) {
+				try { fos.close(); fos = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
+			}
+			if( ois != null ) {
+				try { ois.close(); ois = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
+			}
+		}
+		
 	}
 	
 }

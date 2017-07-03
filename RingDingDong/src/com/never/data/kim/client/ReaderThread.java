@@ -44,7 +44,7 @@ public class ReaderThread extends Thread{
 		byte[] tempBytes = null;
 		
 		try{
-			dis.read(tempBytes, 0, fileLength - 1);
+			dis.read(tempBytes, 0, fileLength);
 		}catch(IOException e){
 			client.addChatAlert("@@ 파일 바이트 읽기가 올바르지 않습니다: @@" + e);
 		}
