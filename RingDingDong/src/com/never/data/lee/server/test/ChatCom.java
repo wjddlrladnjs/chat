@@ -75,8 +75,24 @@ public class ChatCom implements Runnable{
 				case 'X':
 					userName.remove(getMyCount(name));
 					serverThread.stopSocket(serverThread, this, socket);
-					
+
 					onAir = false;
+					break;
+
+				case '1' : //@요한	
+
+//					String namelog= dis.readUTF(); //이름 
+
+					server.addLog(/*namelog+*/"네임 님이 서버의로그를 저장하였습니다 ");
+
+					String log = server.myLog();
+
+//					dos.writeChar('2');//서버에서 또 클라이언트로 보냄 
+//					dos.flush();
+//					dos.writeUTF(log);
+//					dos.flush();
+					serverThread.sendOnlyOne('2', log, this);
+					
 					break;
 				}
 			} catch (IOException e) {
@@ -85,7 +101,7 @@ public class ChatCom implements Runnable{
 		}
 	}
 	//run method end
-	
+
 	public void sendMessage(char protocol, String msg){
 		try {
 			dos.writeChar(protocol);
@@ -93,15 +109,15 @@ public class ChatCom implements Runnable{
 		} catch (IOException e) {
 			server.addLog("[class]ChatCom [method] sendMessage1 "+e);
 		}
-		
+
 		try {
 			dos.writeUTF(msg);
 		} catch (IOException e1) {
 			server.addLog("[class]ChatCom [method] sendMessage2 "+e1);
 		}
-		
+
 	}
-	
+
 
 	//대화명 중복 체크 메소드
 	//user가 1명 생성되고 나서 또 다른 1명이 생성되기 직전에 한다. 해당 메소드 사용에는 arrayList 사용을 확인하며 해야 한다.
@@ -121,7 +137,7 @@ public class ChatCom implements Runnable{
 		}
 		return tmpName;
 	}
-	
+
 	String renameCheck(String name){
 		String tmpName = "";
 		tmpName = name;
@@ -155,11 +171,11 @@ public class ChatCom implements Runnable{
 		tmp.substring(0, tmp.length()-2);
 		return tmp;
 	}
-	
+
 	void disNdosClose(){
 		try{
-		if(dis != null)	dis.close();
-		if(dos != null)	dos.close();
+			if(dis != null)	dis.close();
+			if(dos != null)	dos.close();
 		}catch(IOException e){
 			server.addLog("[class]ChatCom [method] disNdosClose "+e);
 		}

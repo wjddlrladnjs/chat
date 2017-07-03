@@ -21,7 +21,8 @@ public class ChatServer {
 	private JTextArea taLog;					//textArea: Log 기록창
 	//객체 변수
 	private ChatServerThread serverThread;		//서버스레드 객체. 전달용
-
+	
+	public String serverChat = " ";
 	ActionListener listener = new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -67,12 +68,20 @@ public class ChatServer {
 
 	void addLog(String msg){
 		taLog.append(msg + "\n");
+		if(!msg.equals(null)){  // @요한
+			serverChat += String.format("%s \n", msg);
+			}
 		int length = taLog.getText().length(); 
 		taLog.setCaretPosition(length);
 	}
 
 	public ChatServer() {
 		initGUI();
+	}
+	
+	public String myLog(){//@요한
+		
+		return serverChat; 
 	}
 
 	void initGUI(){

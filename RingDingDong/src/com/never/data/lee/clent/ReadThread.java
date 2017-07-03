@@ -25,7 +25,6 @@ public class ReadThread extends Thread{
 				switch(protocol){
 				case 'M':
 					msg = dis.readUTF(); //읽어와서 스트링에저장 
-
 					Cilent.addChatList(msg);
 					break;
 
@@ -33,8 +32,6 @@ public class ReadThread extends Thread{
 					msg = dis.readUTF(); //사용자의 이름이 메시지에담긴다  
 					Cilent.setName(String.format("%s 님",msg));
 					//					Cilent.addChatList(" #  "+msg+"님이 접속 하셧습니다.");  //중복으로나와서 제거
-
-
 					break;
 				case 'L' :  //원래정보로 받는다  - 파싱 
 					msg = dis.readUTF(); // 리스트를받았다 
