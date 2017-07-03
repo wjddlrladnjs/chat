@@ -83,8 +83,7 @@ public class ChatCom implements Runnable{
 
 //					String namelog= dis.readUTF(); //이름 
 
-					server.addLog(/*namelog+*/"네임 님이 서버의로그를 저장하였습니다 ");
-
+					server.addLog( this.name+" 님이 서버의 로그를 저장하였습니다 ");
 					String log = server.myLog();
 
 //					dos.writeChar('2');//서버에서 또 클라이언트로 보냄 
