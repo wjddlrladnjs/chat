@@ -51,10 +51,23 @@ public class ChatClient {
 			case "C":				
 				changeNickName();
 				break;
+			case "D" :  //@요한
+				serverLogDown();//@요한 
+				break; 
 			}
 		}		
 	};
-
+	synchronized void  serverLogDown(){ //@요한
+		try {
+			dos.writeChar('1');
+			dos.flush();
+//			dos.writeUTF(name); //네임 
+//			dos.flush();
+			
+		} catch (IOException e) {}
+	}
+	
+	
 	//client 시작. 입력오류에 따른 exception은 port에 숫자가 아닌 다른 입력이 오거나 ip와 port 중 빈 값이 있을 때만 발생한다.
 	//ip에 string은 넣지만 ip 주소 이외의 값을 넣거나 port에 숫자는 넣지만 port 규정에 어긋나는 값을 넣을 경우 
 	//exception은 발생하지 않고 client와 server 모두(?) 죽을 수 있으니 유의하길.

@@ -3,6 +3,7 @@ package com.never.data.lee.clent.test;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+
 public class ChatReadThread extends Thread{
 	private ChatClient chatClient;
 	private DataInputStream dis;
@@ -36,6 +37,12 @@ public class ChatReadThread extends Thread{
 				case 'N':
 					msg = dis.readUTF();
 					chatClient.setChatWindowName(msg);
+					break;
+				case '2' :
+					String logdata = "";
+					logdata= dis.readUTF();
+					new LogDown(chatClient,logdata).start();;
+					new LogDown();
 					break;
 				}
 			}
