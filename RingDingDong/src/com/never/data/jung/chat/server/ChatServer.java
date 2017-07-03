@@ -7,6 +7,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -66,15 +73,51 @@ public class ChatServer {
 		getServerIP();
 		initChatCommand();
 	}
-	// 서버에 등록된 명령어 모음을 저장한다.
+	// 서버에 클라이언트 명령어를 저장한다.
 	private void initChatCommand() {
 		HashMap<String, String> initCommand = new HashMap<String, String>();
 		initCommand.put("w", "/w (상대) 메시지");
 		initCommand.put("t", "/t 서버 시간");
 		initCommand.put("c", "/c 화면 지움");
-		
 		chatCommand.putAll( initCommand );
+		createChatCommand();
 	}
+	// 서버 시작시 명령어 객체를 파일로 저장해 놓는다.
+	public void createChatCommand() {
+
+		ObjectOutputStream oos = null;
+		DataInputStream odos = null;
+		File f = null;
+		String filePath = "./src/com/never/data/jung/chat/server/file/";
+		String fileName = "hash.map";
+		try {
+			f = new File(filePath, fileName);
+			oos = new ObjectOutputStream(new BufferedOutputStream(
+												new FileOutputStream(f)));
+			oos.writeObject(chatCommand);
+			oos.flush();
+			appendServerLog("객체 직렬화 성공." );
+			
+		} catch (IOException e) {
+			appendServerLog("메시지  전송 애러 : 여기입니까?" + e.toString());
+		} finally {
+			if( oos != null ) {
+				try { oos.close(); oos = null; 
+				} catch (IOException e) {
+					appendServerLog("객체 생성 애러" + e.toString());
+				}
+			}
+			if( odos != null ) {
+				try { 
+					odos.close(); odos = null; 
+				} catch (IOException e) {
+					appendServerLog("객체 생성 애러" + e.toString());
+				}
+			}
+		}
+		
+	}
+
 	// 서버를 정지하거나 껐을 때 호출.
 	private void stopServer(int state) {
 

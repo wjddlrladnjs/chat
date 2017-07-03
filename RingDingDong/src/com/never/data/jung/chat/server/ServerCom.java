@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class ServerCom implements Runnable {
 	public void sendChatCommand( char protocol ) {
 
 		HashMap<String,String> chatCommand = server.getChatCommand();
-		ObjectOutputStream oos = null;
+		ObjectInputStream oos = null;
 		DataInputStream odos = null;
 		File f = null;
 		String filePath = "./src/com/never/data/jung/chat/server/file/";
@@ -48,9 +49,6 @@ public class ServerCom implements Runnable {
 		try {
 			f = new File(filePath, fileName);
 			dos.writeChar(protocol);
-			oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
-			oos.writeObject(chatCommand);
-			oos.flush();
 			int size = (int)f.length();
 			byte[] data = new byte[size];
 			odos = new DataInputStream(new FileInputStream(f));
