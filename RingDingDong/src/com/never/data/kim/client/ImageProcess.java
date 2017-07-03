@@ -27,6 +27,7 @@ public class ImageProcess extends Thread{
 	public void gainImageInfo(){
 		fileName = thread.getFileName();
 		fileLength = thread.getFileLength();
+		client.addChatAlert("서버에서 읽어온 fileLength: " + fileLength);
 		imageData = new byte[fileLength];
 		imageData = thread.getImageData(fileLength);
 	}

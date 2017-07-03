@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.Flushable;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -101,6 +102,7 @@ public class MultiChatClient {
 				rename();
 				break;
 			case "D":
+				System.out.println("버튼클릭이벤트발생");
 				changeBgrImg();
 				break;
 			}
@@ -137,15 +139,25 @@ public class MultiChatClient {
 		int tlength = (int) fc.getSelectedFile().length();
 		System.out.println("tlength: " + tlength);
 		
+		System.out.println("returnVal: " + returnVal);
+		System.out.println("JFilechooser: " + JFileChooser.APPROVE_OPTION);
+		boolean fileChosen = false;
+		/////////////////////////////////////////////////////////////
 		if(returnVal == JFileChooser.APPROVE_OPTION){ //if approved(yes || select)
 			file = fc.getSelectedFile();	//선택된 파일을 얻는다.
+			if(file == null) fileChosen = true;
+			System.out.println("filechosen: " + fileChosen);
+			
 			if(file == null){	//null이면 소용없게.
 				return;
 			}
 			System.out.println(tlength);		//왜안되지?
 			System.out.println(file.getName());
 		}
+		//file = fc.getSelectedFile();
 		
+		if(file.getName().isEmpty())System.out.println("응 파일네임 없어~");
+		addChatAlert("파일네임 있대");
 		addChatAlert("@@ " +  file.getName() + "을 선택하였습니다. @@");
 		
 		//서버로 보내자
@@ -165,6 +177,7 @@ public class MultiChatClient {
 			fis = new FileInputStream(file);
 			//파일이 정상적으로 들어왓으면 length를구한다
 			addChatAlert("파일이 인풋스트림에 들어왔습니다.");
+			System.out.println("이미지파일이 인풋스트림에 들어왓다: " + file.length());
 			length = tempLength;
 			System.out.println("length:" + length);
 			
@@ -175,12 +188,15 @@ public class MultiChatClient {
 			
 			fileName = file.getName();
 			brr = new byte[length];	//length만큼 byte배열 잡아줌
+			System.out.println(":brr.length: " + brr.length);
 			
 //			DataInputStream dis = new DataInputStream(is);
-			
+			DataInputStream fileDis = new DataInputStream(fis);
 			//여기가 쓰레드가 되어야하는부분 아닌가?
-			fis.read(brr, 0, length);	//꽉찰때까지 읽어서 brr에 저장
-			addChatAlert("FIS가 배열 brr에 파일 길이만큼 저장했습니다.");
+			//int cnt = fis.read(brr, 0, length);	//꽉찰때까지 읽어서 brr에 저장
+			fileDis.readFully(brr, 0, length);
+			System.out.println(":brr.length: " + brr.length);
+			addChatAlert("DIS가 배열 brr에 파일 길이만큼 저장했습니다.");
 			
 			//프로토콜 보낸다
 			dos.writeChar('i');
@@ -189,8 +205,15 @@ public class MultiChatClient {
 			dos.flush();
 			dos.writeInt(length);
 			dos.flush();
-			dos.write(brr, 0, brr.length);	//쓴다
+			
+			dos.writeChar('A');
+			
+			System.out.println("ma! 이제 brr.length 간다");
+			dos.write(brr, 0, length);	//쓴다
+			System.out.println("ma! 이제 brr.length 갔다");
 			dos.flush();
+			
+			System.out.println(brr.length);
 			
 			addChatAlert(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냅니다..",
 					fileName, length));

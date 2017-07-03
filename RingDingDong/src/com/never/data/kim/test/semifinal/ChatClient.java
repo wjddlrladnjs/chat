@@ -1,4 +1,4 @@
-package com.never.data.lee.clent.test;
+package com.never.data.kim.test.semifinal;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -150,8 +150,6 @@ public class ChatClient {
 			dos.flush();
 			dos.writeInt(length);
 			dos.flush();
-			
-			dos.writeChar('A');
 			
 			System.out.println("ma! 이제 brr.length 간다");
 			dos.write(brr, 0, length);	//쓴다

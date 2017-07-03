@@ -1,4 +1,4 @@
-package com.never.data.lee.server.test;
+package com.never.data.kim.test.semifinal;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -149,7 +149,7 @@ public class ChatCom implements Runnable{
 							+ "파일명 : %s, 크기: %d", this.name, str, length));
 
 					//이제 쓰자
-					sendImageData('i', str, length, bytes);
+					//sendImageData('i', str, length, bytes);
 
 					serverThread.sendImageData2All('i', str, length, bytes);
 					break;

@@ -1,4 +1,4 @@
-package com.never.data.lee.clent.test;
+package com.never.data.kim.test.semifinal;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -47,14 +47,10 @@ public class ChatReadThread extends Thread{
 					chatClient.addLog("서버에서 프로토콜 i를 받았습니다. ");
 					byte[] bytes = null;
 					String str = dis.readUTF();
-					System.out.println("받기 utf");
 					int length = dis.readInt();
 					bytes = new byte[length];
-					System.out.println("받기 int");
 					dis.read(bytes, 0, length);
-					System.out.println("받기 byte");
 					
-					System.out.println("받기 complete");
 					chatClient.addLog("파일을 받았습니다. 배경화면으로 설정합니다.");
 					
 					//setThisImageAsBackground();

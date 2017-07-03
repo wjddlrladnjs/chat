@@ -1,5 +1,7 @@
 package com.never.data.kim.server;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,6 +13,15 @@ public class ServerThread implements Runnable{
 	MultiChatServer server;
 	boolean isActivated;
 	ServerSocket ss;
+	
+	
+	//이미지를 위하여
+	boolean orderTaken = false;
+	DataInputStream dis;
+	DataOutputStream dos;
+	//1개 더만들어서 이미지를 주고받는 소켓을 따로
+	
+	
 	
 	//매번 만들어지는 소켓을 가진 Comm쓰레드 묶어서 관리할 객체
 	ArrayList<Comm> commList = new ArrayList<Comm>(); //이거랑 httpurlConnectino이랑붙는거래~
@@ -121,6 +132,12 @@ public class ServerThread implements Runnable{
 		
 	}
 	
+	public void startImgReceiveThread(Comm comm){
+		
+		if(!orderTaken) orderTaken = true;
+		System.out.println("Comm이 나한테 새로운 I/O만들라그랬어!");
+	}
+	
 	public void run(){
 		
 		ss = null;
@@ -144,6 +161,7 @@ public class ServerThread implements Runnable{
 		while(isActivated){
 			//클라 올때까지 기달료~
 			
+			BgrImage bgrImg = null;
 			Socket s = null;
 			String remoteIP = "";
 			Comm comm = null;	//잠깐 사용할 변수
@@ -163,8 +181,12 @@ public class ServerThread implements Runnable{
 				comm = new Comm(server, this, s);	//접근할일이생겻으니 한줄로안가지~
 				commList.add(comm);	//여다가 add해야죠?
 				comm.start();//comm쓰레드하나만들어소ㅓ 동작하세요~
-				//그리고 난 다시 접속을 기다릴고얌
-				//sendUserList(comm);
+				
+//				if(orderTaken){
+//					bgrImg = new BgrImage(server, this, comm);
+//					bgrImg.start(); //데이터 파일로 변환한다음 각각 클라에 쏘는거
+//					server.addChatAlert("이미지 보내기용 쓰레드를 생성합니다.");
+//				}
 				
 				
 			} catch (IOException e) {

@@ -1,4 +1,4 @@
-package com.never.data.lee.server.test;
+package com.never.data.kim.test.semifinal;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -61,7 +61,7 @@ public class ChatServerThread implements Runnable{
 	//run 메소드 종료
 	
 	////////// 이미지 전송 //////////
-	public synchronized void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
+	public void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
 		for(ChatCom com : chatComList){
 			com.sendImageData(protocol, fileName, fileLength, brr);
 		}
