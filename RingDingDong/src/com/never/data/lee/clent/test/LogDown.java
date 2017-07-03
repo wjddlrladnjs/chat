@@ -38,7 +38,7 @@ public class LogDown extends Thread{
 		if(!f3.exists()){
 			f3.mkdir();
 		}
-		File f4 = new File(f3, /*Cilent.name+*/"_"+fileName+".txt");
+		File f4 = new File(f3, "ChatLog_"+fileName+".txt");
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(f4);
