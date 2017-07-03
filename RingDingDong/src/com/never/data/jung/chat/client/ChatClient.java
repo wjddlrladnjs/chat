@@ -9,11 +9,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
@@ -31,12 +34,12 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 public class ChatClient {
-	
+
 	private JFrame f;
 	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
-					cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
-					cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
-					sPanel;
+	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
+	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
+	sPanel;
 	private JTextField tfIP, tfPort, tfNickname, tfMessage;
 	private JTextArea taClientLog;
 	// JEditorPane epChatLog;
@@ -46,7 +49,7 @@ public class ChatClient {
 	private Socket s;
 	private DataInputStream dis;
 	private DataOutputStream dos;
-	
+
 	private String nickname;
 	private DefaultListModel<String> model;
 	private JList<String> clientList;
@@ -55,11 +58,11 @@ public class ChatClient {
 	private ActionListener listener = new ActionListener() {
 
 		public void actionPerformed(ActionEvent e) {
-			
+
 			String cmd = e.getActionCommand();
-			
+
 			switch( cmd ) {
-			
+
 			case "connection":
 				connectServer();
 				break;
@@ -76,9 +79,63 @@ public class ChatClient {
 			}
 		}
 	};
-	
+
 	public ChatClient() {
 		initGUI();
+		getClientIP();
+	}
+	// 임시 아이피 사용을 쉽게 하기 위한 메서드.
+	private void getClientIP() {
+
+		try {
+			String ip = InetAddress.getLocalHost().getHostAddress();
+			tfIP.setText(ip);
+		} catch (UnknownHostException e) {
+			appendClientLog("클라 IP를 읽어올 수 없습니다. :" + e);
+		}  
+
+	}
+	// 접속할 때 서버에서 명령어를 받아온다.
+	public void getChatCommand(ClientReadThread clientReadThread) {
+
+		FileOutputStream fos = null;
+		ObjectInputStream ois = null;
+		HashMap<String, String> temp = null;
+
+		String filePath = "./src/com/never/data/jung/chat/client/file/";
+		String fileName = "";
+		File f = null;
+		try {
+			fileName = dis.readUTF();
+			int size = dis.readInt();
+			byte[] data = new byte[size];
+			dis.readFully(data, 0, size);
+			f = new File(filePath, fileName);
+			fos = new FileOutputStream(f);
+			fos.write(data, 0, size);
+			fos.flush();
+
+			ois = new ObjectInputStream(new FileInputStream(f));
+			Object obj = ois.readObject();
+			if( obj instanceof HashMap ) {
+				temp = (HashMap) obj;
+				chatCommand = temp;
+			}
+			appendClientLog("받은 명령어 : " + chatCommand.size() + "개");
+
+		} catch( IOException e ) {
+			appendClientLog("객체 받기 애러" + e.toString());
+		} catch (ClassNotFoundException e) {
+			appendClientLog("받은 객체가 받을 객체와 다름" + e.toString());
+		} finally {
+			if( fos != null ) {
+				try { fos.close(); fos = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
+			}
+			if( ois != null ) {
+				try { ois.close(); ois = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
+			}
+		}
+
 	}
 	// 귓속말 처리 메서드
 	private void sendWhisperMessage(String tagetClient, String msg) {
@@ -97,13 +154,13 @@ public class ChatClient {
 		} catch( IOException e ) {
 			appendClientLog("클라 메시지 전송 애러 : " + e.toString());
 		}
-		
+
 	}
 	// 클라가 서버에서 나가면 해당 클라를 리스트에서 삭제한다.
 	public void deleteClient(String clientName) {
 		// removeElement는 Object까지 삭제가 가능하다.
 		model.removeElement(clientName);
-		
+
 	}
 	// 접속 중에 추가되는 클라 이름을 리스트에 추가한다.
 	public void addClientName(String clientName) {
@@ -111,39 +168,39 @@ public class ChatClient {
 	}
 	// 서버 접속시 서버가 보내온 clientName을 list에 추가한다.
 	public void showUserList( String[] clientNameList ) {
-		
+
 		for( String clientName : clientNameList ) {
 			model.addElement( clientName );
 		}
-		
+
 	}
 	// 변경된 클라이언트 이름을 리스트에 적용한다.
 	public void updateClient(String oldClientName, String newClientName) {
-		
+
 		// 예전 이름을 쓰던 클라이언트의 위치를 찾아서,
 		int index = model.indexOf(oldClientName);
 		// 새로운 이름으로 변경해준다.
 		model.setElementAt(newClientName, index);
-		
+
 	}
 	// 서버와 접속을 종료하는 메서드.
 	private void disconnectServer() {
-		
+
 		doExitEvent(5);
 		appendClientLog(">> 접속을 종료하였습니다. <<");
 		model.clear();
 		changeButton(false);
-		
+
 	}
 	// 내게 보이는 닉네임을 변경한다.
 	public void setNickName(String nickname) {
-		
+
 		this.nickname = nickname;
 		f.setTitle(String.format("채팅 클라이언트  - %s", nickname));
 	}
 	// 닉네임 바꿀 때 처리를 해보자.
 	private void changeNickname() {
-		
+
 		String newNickname = tfNickname.getText();
 		// 아무값도 들어오지 않았다면 메서드를 종료한다.
 		if( newNickname == null || newNickname.length() == 0 ) {
@@ -158,7 +215,7 @@ public class ChatClient {
 	private void sendNickname(String nickname) {
 
 		String msg = tfNickname.getText();
-		
+
 		if( msg.length() == 0 ) {
 			return;
 		}
@@ -166,7 +223,7 @@ public class ChatClient {
 			appendClientLog("서버와 연결되어 있지 않습니다.");
 			return;
 		}
-		
+
 		try {
 			dos.writeChar('R');
 			dos.flush();
@@ -175,31 +232,38 @@ public class ChatClient {
 		} catch( IOException e ) {
 			appendClientLog("닉네임 변경 애러" + e.toString());
 		}
-		
+
 	}
 	// 명령어 전송 메소드.
 	private void chatCommandEvent(String command) {
-		
-		chatCommand.put("w", "W");
 
 		String result = "";
-		String inputKey = command.substring(1,2);
+		String inputKey = "";
+		int strEnd = -1;
 		
-		result = chatCommand.get(inputKey);
-		if( result == null ) {
-			result = "잘못된 명령입니다.";
-			appendClientLog(result);
+		if( command.length() >= 2 ) {
+			strEnd = command.length();
+			 if( strEnd != -1 ) {
+				 inputKey = command.substring(1, strEnd);
+				 if( (chatCommand.get(inputKey) != null) ) {
+					 appendClientLog(chatCommand.get(inputKey));
+				 } else {
+					 appendClientLog("잘못된 입력입니다.");
+				 }
+				 
+			 }
 		}
-		
 	}
+
+
 	// 메시지 전송을 위한 메서드.
 	private void sendMessage() {
 
 		String msg = tfMessage.getText();
 		tfMessage.setText("");
-		
+
 		String tagetClient = clientList.getSelectedValue();
-		
+
 		if( msg.length() == 0 ) {
 			return;
 		}
@@ -217,7 +281,7 @@ public class ChatClient {
 			chatCommandEvent(msg);
 			return;
 		}
-		
+
 		try {
 			dos.writeChar('M');
 			dos.flush();
@@ -226,25 +290,25 @@ public class ChatClient {
 		} catch( IOException e ) {
 			appendClientLog("클라 메시지 전송 애러 : " + e.toString());
 		}
-		
+
 	}
 	// client log 메시지 띄우는 메서드.
 	public void appendClientLog( String msg ) {
-		
+
 		int length = taClientLog.getText().length();
 		taClientLog.append(msg + "\n");
 		// 자동 스크롤링
 		taClientLog.setCaretPosition( length );
-		
+
 	}
 	// 접속 버튼 눌렀을 때 해당 정보로 서버에 접속시도.
 	private void connectServer() {
-	
+
 		// 입력된 포트 정보를 가져온다.
 		int port = 12345;
 		String inputIP = tfIP.getText().trim();
 		String inputPort = tfPort.getText().trim();
-		
+
 		// 입력된 port가 잘못되었을 때 처리.
 		if( (inputPort != null && !"".equals(inputPort)) && (inputIP != null && !"".equals(inputIP)) ) {
 			try {
@@ -266,7 +330,7 @@ public class ChatClient {
 		try {
 			s = new Socket(inputIP, port);
 			appendClientLog("소켓 연결 완료");
-			
+
 			// 소켓이 연결되었으면, I/O 준비를 하자.
 			dis = new DataInputStream(s.getInputStream());
 			dos = new DataOutputStream(s.getOutputStream());
@@ -274,20 +338,20 @@ public class ChatClient {
 			// 여기까지 진행되면 서버와 통신이 가능하다.
 			// 버튼 상태를 변경한다.
 			changeButton(true);
-			
+
 			// 보내는 것은 이 객채로 가능 하지만,
 			// 받는 작업은 언제 올지 모르기 때문에 무한 반복으로 기다려야 한다.
 			// 이럴 때 쓰라고 쓰래드를 만들어서 쓴다.
-			 new Thread(new ClientReadThread(this)).start();;
-			
+			new Thread(new ClientReadThread(this)).start();;
+
 		} catch( IOException e ) {
 			appendClientLog("클라 I/O 애러" + e.toString());
 		}
-		
+
 	}
 	// 서버와 연결되었을 때 버튼의 상태 변경 메서드.
 	public void changeButton( boolean state ) {
-		
+
 		btnSend.setEnabled(state);
 		btnNickname.setEnabled(state);
 		btnFuntion1.setEnabled(state);
@@ -303,7 +367,7 @@ public class ChatClient {
 			tfPort.setEnabled(!state);
 			tfIP.setEnabled(!state);
 			tfMessage.grabFocus();
-			
+
 		} else {
 			btnConnect.setText("접속");
 			btnConnect.setBackground(Color.GREEN);
@@ -315,7 +379,7 @@ public class ChatClient {
 	}
 	// 클라 종료시 호출된 메서드.
 	public void doExitEvent(int state) {
-		
+
 		try {
 			// 서버에게도 클라가 종료되었음을 알림.
 			if( dos != null ) {
@@ -354,7 +418,7 @@ public class ChatClient {
 			public void windowClosing(WindowEvent e) {
 				// 클라 종료 메서드 호출. 인자 0은 종료.
 				doExitEvent(0);
-			;}
+				;}
 		});
 
 		// main
@@ -433,7 +497,7 @@ public class ChatClient {
 		// main.center.east.center
 		cPanel.add(cPanelEast, "East");
 		cPanelEast.add(cPanelEastCenter, "Center");
-			// list 부분 - unselected 구현이라 쓰고 복사라고 읽는다.
+		// list 부분 - unselected 구현이라 쓰고 복사라고 읽는다.
 		clientList = new JList<String>();
 		clientList.setSelectionModel(new DefaultListSelectionModel() {
 			private static final long serialVersionUID = -1282953634250437799L;
@@ -523,7 +587,7 @@ public class ChatClient {
 		new ChatClient();
 
 	}
-	
+
 	// getter and setter
 	public JFrame getF() {
 		return f;
@@ -759,40 +823,5 @@ public class ChatClient {
 	public void setModel(DefaultListModel<String> model) {
 		this.model = model;
 	}
-	public void getChatCommand(ClientReadThread clientReadThread) {
-		
-		FileOutputStream fos = null;
-		ObjectInputStream ois = null;
-		HashMap<String, String> temp = null;
-		
-		try {
-			int size = dis.readInt();
-			byte[] data = new byte[size];
-			dis.readFully(data, 0, size);
-			fos = new FileOutputStream("hash.map");
-			fos.write(data, 0, size);
-			fos.flush();
-			
-			ois = new ObjectInputStream(new FileInputStream("hash.map"));
-			Object obj = ois.readObject();
-			if( obj instanceof HashMap ) {
-				temp = (HashMap) obj;
-			}
-			appendClientLog("받은 명령어" + temp.toString());
-			
-		} catch( IOException e ) {
-			appendClientLog("객체 받기 애러" + e.toString());
-		} catch (ClassNotFoundException e) {
-			appendClientLog("받은 객체가 받을 객체와 다름" + e.toString());
-		} finally {
-			if( fos != null ) {
-				try { fos.close(); fos = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
-			}
-			if( ois != null ) {
-				try { ois.close(); ois = null; } catch (IOException e) {appendClientLog("객체 생성 애러" + e.toString());}
-			}
-		}
-		
-	}
-	
+
 }

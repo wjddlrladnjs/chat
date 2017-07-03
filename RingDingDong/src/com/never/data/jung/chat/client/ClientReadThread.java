@@ -87,7 +87,6 @@ public class ClientReadThread implements Runnable{
 					break;
 				case '/' :
 					client.getChatCommand( this );
-					
 					break;
 				}
 			}

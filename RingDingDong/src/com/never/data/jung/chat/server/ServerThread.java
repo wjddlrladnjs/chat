@@ -15,22 +15,12 @@ public class ServerThread implements Runnable {
 	private ServerCom serverCom;
 	private boolean onAir;
 	private ArrayList<ServerCom> serverComList = new ArrayList<ServerCom>();
-	private HashMap<String, String> chatCommand = new HashMap<String, String>();
 
 	// 매개변수로 넘겨 받은 server를 클래스 내에서 공유한다.
 	public ServerThread(ChatServer chatServer) {
 		this.server = chatServer;
-		initChatCommand();
 	}
-	// 서버에 등록된 명령어 모음을 저장한다.
-	private void initChatCommand() {
-		HashMap<String, String> initCommand = new HashMap<String, String>();
-		initCommand.put("w", "/w (상대) 메시지");
-		initCommand.put("t", "/t 서버 시간");
-		initCommand.put("c", "/c 화면 지움");
-		
-		chatCommand.putAll( initCommand );
-	}
+
 	// 선택된 대상의 com쓰레드를 찾아서 귓말을 보낸다.
 	public void sendWhisperMessage(String tagetClient, String msg) {
 
@@ -221,12 +211,6 @@ public class ServerThread implements Runnable {
 
 	public void setComList(ArrayList<ServerCom> comList) {
 		this.serverComList = comList;
-	}
-	public HashMap<String, String> getChatCommand() {
-		return chatCommand;
-	}
-	public void setChatCommand(HashMap<String, String> chatCommand) {
-		this.chatCommand = chatCommand;
 	}
 
 }

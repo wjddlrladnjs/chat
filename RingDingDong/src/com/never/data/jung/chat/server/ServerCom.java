@@ -39,21 +39,24 @@ public class ServerCom implements Runnable {
 	// 서버 명령어 모음을 객체로 보낸다.
 	public void sendChatCommand( char protocol ) {
 
-		HashMap<String,String> chatCommand = serverThread.getChatCommand();
+		HashMap<String,String> chatCommand = server.getChatCommand();
 		ObjectOutputStream oos = null;
 		DataInputStream odos = null;
 		File f = null;
+		String filePath = "./src/com/never/data/jung/chat/server/file/";
+		String fileName = "hash.map";
 		try {
+			f = new File(filePath, fileName);
 			dos.writeChar(protocol);
-			oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("hash.map")));
+			oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
 			oos.writeObject(chatCommand);
 			oos.flush();
-			f = new File("hash.map");
 			int size = (int)f.length();
 			byte[] data = new byte[size];
-			server.appendServerLog(String.valueOf(size));
 			odos = new DataInputStream(new FileInputStream(f));
 			odos.readFully(data, 0, size);
+			dos.writeUTF(fileName);
+			dos.flush();
 			dos.writeInt(size);
 			dos.flush();
 			dos.write(data, 0, size);
@@ -72,7 +75,6 @@ public class ServerCom implements Runnable {
 		}
 		
 	}
-	
 	// 클라이언트에게 메시지를 보낼 때 호출된다.
 	public void sendMessage( char protocol, String msg ) {
 

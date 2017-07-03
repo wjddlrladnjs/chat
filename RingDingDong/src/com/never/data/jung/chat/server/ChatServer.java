@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -36,6 +37,7 @@ public class ChatServer {
 	private ServerThread serverThread;
 	private int port;
 	public static String serverTime;
+	private HashMap<String, String> chatCommand = new HashMap<String, String>();
 
 	ActionListener listener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -62,6 +64,15 @@ public class ChatServer {
 	public ChatServer() {
 		initGUI();
 		getServerIP();
+	}
+	// 서버에 등록된 명령어 모음을 저장한다.
+	private void initChatCommand() {
+		HashMap<String, String> initCommand = new HashMap<String, String>();
+		initCommand.put("w", "/w (상대) 메시지");
+		initCommand.put("t", "/t 서버 시간");
+		initCommand.put("c", "/c 화면 지움");
+		
+		chatCommand.putAll( initCommand );
 	}
 	// 서버를 정지하거나 껐을 때 호출.
 	private void stopServer(int state) {
@@ -334,6 +345,12 @@ public class ChatServer {
 	}
 	public void setListener(ActionListener listener) {
 		this.listener = listener;
+	}
+	public HashMap<String, String> getChatCommand() {
+		return chatCommand;
+	}
+	public void setChatCommand(HashMap<String, String> chatCommand) {
+		this.chatCommand = chatCommand;
 	}
 
 }
