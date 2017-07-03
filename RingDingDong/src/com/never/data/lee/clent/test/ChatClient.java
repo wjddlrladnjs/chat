@@ -1,6 +1,7 @@
 package com.never.data.lee.clent.test;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -17,7 +18,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -27,6 +30,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -34,11 +39,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ChatClient {
 	//GUI 변수
 	private JFrame f;
+	private JPanel mainPanel, nPanel, nPanelCenter, nPanelCenterLeft, nPanelCenterRight,
+	cPanel, cPanelCenter, cPanelCenterSouth, cPanelSouth, cPanelEast, cPanelEastCenter, cPanelEastSouth, 
+	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
+	sPanel;
 	private JTextField tfIP, tfPort, tfName, tfText;
 	private JTextArea taLog;
-	private JButton btn1, btn2, btnName, btnServerLog, btnImgBg;
-	private JList<String> list;
+	private JScrollPane spUserList, spClientLog;
+	private JButton btn1, btnNickname, btnServerLog, btnImgBg, btnFuntion3, btnFuntion4, btnNameChange, btn2;
 	private DefaultListModel<String> model;
+	private JList<String> list;
 	//네트워크 변수
 	private Socket socket;
 	private DataInputStream dis;
@@ -337,84 +347,178 @@ public class ChatClient {
 	}
 
 	//GUI 구현 메소드
-	void initGUI(){
-		f = new JFrame("Client Screen");
-		f.setBounds(700,100,500,500);
-		JPanel p1 = new JPanel(new BorderLayout());		// 아이피주소 버튼 + textfield
-		JPanel p2 = new JPanel(new BorderLayout());		// 포트번호 버튼 + textfield
-		JPanel p3 = new JPanel(new GridLayout(1,2));	// 아이피 버튼 + textfield +포트 버튼 + textfield
-		JPanel p4 = new JPanel(new BorderLayout());		// 위쪽 버튼 textfield 전체		
-		JPanel p5 = new JPanel(new BorderLayout());		// 메시지 전송 창 + 전송 버튼
-		JPanel p6 = new JPanel(new BorderLayout());		// 대화명 변경 라벨 + 변경 textfield
-		JPanel p71 = new JPanel(new GridLayout(1,2));	// 버튼 2개(서버로그, 이미지 배경 변경)
-		JPanel p7 = new JPanel(new GridLayout(3,1));	// 대화명변경 버튼 + 대화명	변경창 + 버튼2개		
-		JPanel p8 = new JPanel(new BorderLayout());		// user list + 대화명변경 버튼 + 대화명	변경창 + 버튼2개	
+	//GUI 구현 메소드
+	void initGUI() {
 
-		p1.add("West",new JLabel("  IP  "));
-		p1.add("Center",tfIP = new JTextField(15));
-		p2.add("West",new JLabel(" Port "));
-		p2.add("Center",tfPort = new JTextField(5));	
-
-		p3.add(p1);
-		p3.add(p2);
-
-		btn1 = new JButton("Connect");
-		btn1.setActionCommand("A");
-		btn1.addActionListener(listener);
-		p4.add("Center",p3);
-		p4.add("East",btn1);
-
-		///////////////////////////////////////위쪽 마무리 아래쪽 시작
-		p5.add("Center",tfText = new JTextField());
-		tfText.setActionCommand("B"); // enter로 action command 값 줌
-		tfText.addActionListener(listener); // enter로 action command 값 줌
-		p5.add("East",btn2 = new JButton("Send"));
-		btn2.setEnabled(false);
-		btn2.setActionCommand("B");
-		btn2.addActionListener(listener);	
-
-		//////////////////////////////////////아래쪽 마무리 오른쪽 시작
-		p6.add("West", new JLabel(" NickName "));
-		p6.add("Center",tfName = new JTextField(10));
-
-		p71.add(btnServerLog = new JButton("Get Log"));
-		btnServerLog.setActionCommand("0");
-		btnServerLog.addActionListener(listener);
-		p71.add(btnImgBg = new JButton("Image bg"));
-		btnImgBg.setActionCommand("i");
-		btnImgBg.addActionListener(listener);
-
-		p7.add(p71);
-
-		p7.add(btnName = new JButton("Name Change"));
-		btnName.setActionCommand("C");
-		btnName.addActionListener(listener);
-
-		p7.add( p6);
-
-		p8.add("South", p7);
-		model = new DefaultListModel<String>();
-		list = new JList<String>();
-		list.setModel(model);
-		list.setFixedCellWidth(100);
-		p8.add("Center", new JScrollPane(list));
-
-
-		f.add("North",p4);
-		taLog = new JTextArea();		
-		f.add("Center", new JScrollPane(taLog));
-		taLog.setEditable(false);
-		f.add("East", p8);
-		f.add("South", p5);
-
-		f.setVisible(true);
-
+		f = new JFrame("Chatting Client");
+		f.setBounds(0, 600, 500, 400);
+		// 클라이언트 종료.
 		f.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
 				exitClient();
 				System.exit(0);
 			}			
 		});
+
+		// main
+		mainPanel = new JPanel(new BorderLayout());
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		f.add(mainPanel);
+
+		// main.north
+		nPanel = new JPanel(new BorderLayout());
+		nPanelCenter = new JPanel(new GridLayout(1, 2));
+		nPanelCenterLeft = new JPanel(new BorderLayout());
+		nPanelCenterRight = new JPanel(new BorderLayout());
+
+		btn1 = new JButton("접속");
+		btn1.setActionCommand("A");
+		btn1.addActionListener(listener);
+		btn1.setFocusable(false);
+		btn1.setBackground(Color.GREEN);
+		nPanel.add(btn1, "East");
+		nPanel.add(nPanelCenter, "Center");
+		nPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"server info", TitledBorder.LEFT,TitledBorder.CENTER)));
+
+		nPanelCenter.add(nPanelCenterLeft);
+		nPanelCenterLeft.add(new JLabel("IP : "), "West");
+		tfIP = new JTextField("1.1.1.6", 10);
+		tfIP.setActionCommand("connection");
+		tfIP.addActionListener(listener);
+		nPanelCenterLeft.add(tfIP, "Center");
+		nPanelCenter.add(nPanelCenterRight);
+		nPanelCenterRight.add(new JLabel("Port : "), "West");
+		nPanelCenter.add(nPanelCenterRight);
+		tfPort = new JTextField("12345", 10);
+		nPanelCenterRight.add(tfPort, "Center");
+		tfPort.setActionCommand("connection");
+		tfPort.addActionListener(listener);
+		nPanelCenter.add(nPanelCenterRight);
+		mainPanel.add(nPanel, "North");
+
+		// main.center
+		cPanel = new JPanel(new BorderLayout());
+		cPanelCenter = new JPanel(new BorderLayout());
+		cPanelCenterSouth = new JPanel(new BorderLayout());
+		cPanelSouth = new JPanel(new BorderLayout());
+		cPanelEast = new JPanel(new BorderLayout());
+		cPanelEastCenter = new JPanel(new BorderLayout());
+		cPanelEastSouth = new JPanel(new BorderLayout());
+		cPanelEastSouthNorth = new JPanel(new GridLayout(2, 2));
+		cPanelEastSouthSouth = new JPanel(new BorderLayout());
+
+		// main.center.center
+		mainPanel.add(cPanel, "Center");
+		cPanel.add(cPanelCenter);
+		cPanelCenter.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
+
+		taLog = new JTextArea();
+		taLog.setEditable(false);
+		spClientLog = new JScrollPane(taLog);
+		spClientLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		cPanelCenter.add(spClientLog, "Center");
+		cPanelCenter.add(cPanelCenterSouth, "South");
+		tfText = new JTextField();
+		tfText.setActionCommand("B"); // enter로 action command 값 줌
+		tfText.addActionListener(listener); // enter로 action command 값 줌
+		cPanelCenterSouth.add(tfText, "Center");
+		btn2 = new JButton("send");
+		btn2.setActionCommand("B");
+		btn2.addActionListener(listener);
+		btn2.setEnabled(false);
+		cPanelCenterSouth.add(btn2, "East");
+
+		// main.center.east
+		// main.center.east.center
+		cPanel.add(cPanelEast, "East");
+		cPanelEast.add(cPanelEastCenter, "Center");
+		// list 부분 - unselected 구현이라 쓰고 복사라고 읽는다.
+		list = new JList<String>();
+		list.setSelectionModel(new DefaultListSelectionModel() {
+			private static final long serialVersionUID = -1282953634250437799L;
+			public void setSelectionInterval(int index0, int index1) {
+				if (index0 == index1) {
+					if (isSelectedIndex(index0)) {
+						removeSelectionInterval(index0, index0);
+						return;
+					}
+				}
+				super.setSelectionInterval(index0, index1);
+			}
+			public void addSelectionInterval(int index0, int index1) {
+				if (index0 == index1) {
+					if (isSelectedIndex(index0)) {
+						removeSelectionInterval(index0, index0);
+						return;
+					}
+					super.addSelectionInterval(index0, index1);
+				}
+			}
+
+		});
+
+		model = new DefaultListModel<String>();
+		list.setModel(model);
+		list.setFixedCellWidth(130);
+		spUserList = new JScrollPane(list);
+		spUserList.setBorder(new TitledBorder("user list"));
+		spUserList.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"user list", TitledBorder.CENTER,TitledBorder.CENTER)));
+		cPanelEastCenter.add(spUserList, "Center");
+
+		// main.center.east.south
+		cPanelEast.add(cPanelEastSouth, "South");
+		cPanelEastSouth.setBorder(new TitledBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createLineBorder(Color.BLACK),
+				"function", TitledBorder.CENTER,TitledBorder.CENTER)));
+		cPanelEastSouth.add(cPanelEastSouthNorth, "North");
+		btnServerLog = new JButton("Get Log");
+		btnImgBg = new JButton("Image gb");
+		btnFuntion3 = new JButton("Fun3");
+		btnFuntion4 = new JButton("Fun4");
+		cPanelEastSouthNorth.add(btnServerLog);
+		cPanelEastSouthNorth.add(btnImgBg);
+		cPanelEastSouthNorth.add(btnFuntion3);
+		cPanelEastSouthNorth.add(btnFuntion4);
+		btnServerLog.addActionListener(listener);
+		btnImgBg.addActionListener(listener);
+		btnFuntion3.addActionListener(listener);
+		btnFuntion4.addActionListener(listener);
+		btnServerLog.setActionCommand("0");
+		btnImgBg.setActionCommand("i");
+		btnFuntion3.setActionCommand("F3");
+		btnFuntion4.setActionCommand("F4");
+		btnServerLog.setEnabled(true);
+		btnImgBg.setEnabled(true);
+		btnFuntion3.setEnabled(false);
+		btnFuntion4.setEnabled(false);
+		cPanelEastSouth.add(cPanelEastSouthSouth, "South");
+		btnNickname = new JButton("nick");
+		btnNickname.addActionListener(listener);
+		btnNickname.setActionCommand("C");
+		btnNickname.setEnabled(false);
+		cPanelEastSouthSouth.add(btnNickname, "East");
+		tfName = new JTextField(5);
+		tfName.addActionListener(listener);
+		tfName.setActionCommand("nick");
+		cPanelEastSouthSouth.add(tfName, "Center");
+
+		// main.south
+		// 뭔가 붙여서 추가하면 좋겠음.
+		// 지금은 빈 공간임.
+		// sPanel = new JPanel(new BorderLayout());
+		// mainPanel.add(sPanel, "South");
+		// JLabel bLabel = new JLabel("이미지를 띄어 볼까?");
+		// bLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// sPanel.add(bLabel);
+
+		f.setVisible(true);
+
 	}
 
 	public static void main(String[] args) {
