@@ -5,6 +5,13 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -24,7 +31,7 @@ public class ChatServer {
 	private JTextField tfPort;
 	private JScrollPane spServerLog;
 	private JButton btnOn, btnOff, btnFunction1, btnFunction2, btnFunction3, btnFunction4 ;
-
+	HashMap<String, String> chatCommand = new HashMap<String, String>();
 	//객체 변수
 	private ChatServerThread serverThread;		//서버스레드 객체. 전달용
 	
@@ -82,6 +89,56 @@ public class ChatServer {
 
 	public ChatServer() {
 		initGUI();
+		initChatCommand();
+	}
+	
+	/*
+	************* 
+	* 	봉준
+	**	*********** 
+	*/
+	// 서버에 클라이언트 명령어를 저장한다.
+	private void initChatCommand() {
+		HashMap<String, String> initCommand = new HashMap<String, String>();
+		initCommand.put("w", "/w (상대) 메시지");
+		initCommand.put("t", "/t 서버 시간");
+		initCommand.put("c", "/c 화면 지움");
+		chatCommand.putAll( initCommand );
+		createChatCommand();
+	}
+	// 서버 시작시 명령어 객체를 파일로 저장해 놓는다.
+	public void createChatCommand() {
+
+		ObjectOutputStream oos = null;
+		DataInputStream odos = null;
+		File f = null;
+		String filePath = "./src/com/never/data/jung/chat/server/file/";
+		String fileName = "hash.map";
+		try {
+			f = new File(filePath, fileName);
+			oos = new ObjectOutputStream(new BufferedOutputStream(
+												new FileOutputStream(f)));
+			oos.writeObject(chatCommand);
+			oos.flush();
+			
+		} catch (IOException e) {
+			addLog("메시지  전송 애러 : 여기입니까?" + e.toString());
+		} finally {
+			if( oos != null ) {
+				try { oos.close(); oos = null; 
+				} catch (IOException e) {
+					addLog("객체 생성 애러" + e.toString());
+				}
+			}
+			if( odos != null ) {
+				try { 
+					odos.close(); odos = null; 
+				} catch (IOException e) {
+					addLog("객체 생성 애러" + e.toString());
+				}
+			}
+		}
+		
 	}
 	
 	public String myLog(){//@요한
@@ -170,4 +227,5 @@ public class ChatServer {
 		new ChatServer();
 	}
 
+	
 }

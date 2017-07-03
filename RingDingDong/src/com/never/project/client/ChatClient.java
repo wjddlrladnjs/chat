@@ -15,9 +15,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -36,6 +38,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.never.data.jung.chat.client.ClientReadThread;
+
 
 public class ChatClient {
 	//GUI 변수
@@ -50,6 +54,7 @@ public class ChatClient {
 	private JButton btn1, btn2, btnNickname, btnServerLog, btnImgBg, btnFuntion3, btnFuntion4, btnNameChange;
 	private DefaultListModel<String> model;
 	private JList<String> list;
+	private HashMap<String, String> chatCommand;
 	//네트워크 변수
 	private Socket socket;
 	private DataInputStream dis;
@@ -61,18 +66,7 @@ public class ChatClient {
 	File file;
 	FileInputStream fis = null;
 	FileOutputStream fos = null;
-	
-	// (임시) 아이피 사용을 쉽게 하기 위한 메서드.
-	private void getClientIP() {
 
-		try {
-			String ip = InetAddress.getLocalHost().getHostAddress();
-			tfIP.setText(ip);
-		} catch (UnknownHostException e) {
-			addLog("클라 IP를 읽어올 수 없습니다. :" + e);
-		}  
-
-	}
 	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
 		@Override
@@ -101,6 +95,66 @@ public class ChatClient {
 			}
 		}		
 	};
+	
+	/*
+	************* 
+	* 	봉준
+	************* 
+	*/
+	// (임시) 아이피 사용을 쉽게 하기 위한 메서드.
+	private void getClientIP() {
+		
+		try {
+			String ip = InetAddress.getLocalHost().getHostAddress();
+			tfIP.setText(ip);
+		} catch (UnknownHostException e) {
+			addLog("클라 IP를 읽어올 수 없습니다. :" + e);
+		}  
+		
+	}
+	// 접속할 때 서버에서 명령어를 받아온다.
+	public void getChatCommand(ChatReadThread chatReadThread) {
+
+		FileOutputStream fos = null;
+		ObjectInputStream ois = null;
+		HashMap<String, String> temp = null;
+
+		String filePath = "./src/com/never/data/jung/chat/client/file/";
+		String fileName = "";
+		File f = null;
+		try {
+			fileName = dis.readUTF();
+			int size = dis.readInt();
+			byte[] data = new byte[size];
+			dis.readFully(data, 0, size);
+			f = new File(filePath, fileName);
+			fos = new FileOutputStream(f);
+			fos.write(data, 0, size);
+			fos.flush();
+
+			ois = new ObjectInputStream(new FileInputStream(f));
+			Object obj = ois.readObject();
+			if( obj instanceof HashMap ) {
+				temp = (HashMap) obj;
+				chatCommand = temp;
+			}
+			addLog("받은 명령어 : " + chatCommand.size() + "개");
+
+		} catch( IOException e ) {
+			addLog("객체 받기 애러" + e.toString());
+		} catch (ClassNotFoundException e) {
+			addLog("받은 객체가 받을 객체와 다름" + e.toString());
+		} finally {
+			if( fos != null ) {
+				try { fos.close(); fos = null; } catch (IOException e) {addLog("객체 생성 애러" + e.toString());}
+			}
+			if( ois != null ) {
+				try { ois.close(); ois = null; } catch (IOException e) {addLog("객체 생성 애러" + e.toString());}
+			}
+		}
+
+	}
+	
 	
 	//@김
 	void changeBgrImg(){
@@ -338,6 +392,7 @@ public class ChatClient {
 
 			}
 		}
+		System.exit(0);
 	}	
 
 	//대화명 변경시 유효성 검사 메소드

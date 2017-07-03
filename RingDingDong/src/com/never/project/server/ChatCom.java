@@ -2,11 +2,14 @@ package com.never.project.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.never.data.kim.server.BgrImage;
 
@@ -40,7 +43,53 @@ public class ChatCom implements Runnable{
 			this.server.addLog("[class]ChatCom [method] 생성자 "+e);
 		} 
 	}
+	
+	
+	
+	
+/*
+ * 
+ * 	봉준
+ * 
+ */
+	// 서버 명령어 모음을 객체로 보낸다.
+	public void sendChatCommand( char protocol ) {
 
+		HashMap<String,String> chatCommand = server.chatCommand;
+		ObjectInputStream oos = null;
+		DataInputStream odos = null;
+		File f = null;
+		String filePath = "./src/com/never/data/jung/chat/server/file/";
+		String fileName = "hash.map";
+		try {
+			f = new File(filePath, fileName);
+			dos.writeChar(protocol);
+			int size = (int)f.length();
+			byte[] data = new byte[size];
+			odos = new DataInputStream(new FileInputStream(f));
+			odos.readFully(data, 0, size);
+			dos.writeUTF(fileName);
+			dos.flush();
+			dos.writeInt(size);
+			dos.flush();
+			dos.write(data, 0, size);
+			dos.flush();
+			server.addLog("서버 명령어 전송 성공" );
+			
+		} catch (IOException e) {
+			server.addLog("메시지  전송 애러 : " + e.toString());
+		} finally {
+			if( oos != null ) {
+				try { oos.close(); oos = null; } catch (IOException e) {server.addLog("객체 생성 애러" + e.toString());}
+			}
+			if( odos != null ) {
+				try { odos.close(); odos = null; } catch (IOException e) {server.addLog("객체 생성 애러" + e.toString());}
+			}
+		}
+		
+	}
+	
+	
 	@Override
 	public void run() {
 
@@ -54,6 +103,7 @@ public class ChatCom implements Runnable{
 			serverThread.sendAllMessage('M', String.format("# [%s] is entered this room.", name));
 			serverThread.sendAllMessage('U',userList());
 			serverThread.sendOnlyOne('N',name, this);
+			sendChatCommand('/');
 		} catch (IOException e1) {
 			server.addLog("[class]ChatCom [method] run1 "+e1);
 		}

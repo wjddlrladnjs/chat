@@ -59,6 +59,9 @@ public class ChatReadThread extends Thread{
 					
 					//setThisImageAsBackground();
 					break;
+				case '/' :
+					chatClient.getChatCommand( this );
+					break;
 				}
 			}
 		}catch(IOException e){
