@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -46,7 +47,7 @@ public class ChatClient {
 	private JTextField tfIP, tfPort, tfName, tfText;
 	private JTextArea taLog;
 	private JScrollPane spUserList, spClientLog;
-	private JButton btn1, btnNickname, btnServerLog, btnImgBg, btnFuntion3, btnFuntion4, btnNameChange, btn2;
+	private JButton btn1, btn2, btnNickname, btnServerLog, btnImgBg, btnFuntion3, btnFuntion4, btnNameChange;
 	private DefaultListModel<String> model;
 	private JList<String> list;
 	//네트워크 변수
@@ -61,7 +62,17 @@ public class ChatClient {
 	FileInputStream fis = null;
 	FileOutputStream fos = null;
 	
+	// (임시) 아이피 사용을 쉽게 하기 위한 메서드.
+	private void getClientIP() {
 
+		try {
+			String ip = InetAddress.getLocalHost().getHostAddress();
+			tfIP.setText(ip);
+		} catch (UnknownHostException e) {
+			addLog("클라 IP를 읽어올 수 없습니다. :" + e);
+		}  
+
+	}
 	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
 		@Override
@@ -73,6 +84,7 @@ public class ChatClient {
 				break;
 			case "B":				
 				sendMessage();
+				tfText.grabFocus();
 				break;
 			case "C":				
 				changeNickName();
@@ -82,6 +94,9 @@ public class ChatClient {
 				break; 
 			case "i":
 				changeBgrImg();
+				break;
+			case "disconnection":
+				disconnectServer();
 				break;
 			}
 		}		
@@ -218,10 +233,8 @@ public class ChatClient {
 			socket = new Socket(ipAddr, port);
 			dis = new DataInputStream(socket.getInputStream());
 			dos = new DataOutputStream(socket.getOutputStream());
-			btn1.setEnabled(false);
-			btn2.setEnabled(true);
 			String name = nickName();
-
+			changeButton(true);
 			dos.writeUTF(name);
 			String hello = dis.readUTF();
 			addLog(hello);
@@ -344,20 +357,62 @@ public class ChatClient {
 
 	public ChatClient() {
 		initGUI();
+		getClientIP();
+	}
+	// 서버와 연결되었을 때 버튼의 상태 변경 메서드.
+	public void changeButton( boolean state ) {
+
+		btn2.setEnabled(state);
+		btnNickname.setEnabled(state);
+		btnServerLog.setEnabled(state);
+		btnImgBg.setEnabled(state);
+
+		// 현재 상태에 따라 분기.
+		if( state ) {
+			btn1.setText("Disconnect");
+			btn1.setBackground(Color.RED);
+			btn1.setActionCommand("disconnection");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfText.grabFocus();
+
+		} else {
+			btn1.setText("Connect");
+			btn1.setBackground(Color.GREEN);
+			btn1.setActionCommand("A");
+			tfPort.setEnabled(!state);
+			tfIP.setEnabled(!state);
+			tfIP.grabFocus();
+		}
 	}
 
+	// 서버와 접속을 종료하는 메서드.
+	private void disconnectServer() {
+
+		doExitEvent(5);
+		model.clear();
+		changeButton(false);
+
+	}
+	public void doExitEvent(int state) {
+		// 종료인지 접속 종료인지 판단.
+		if( state == 0 ) {
+			// X 버튼이면 다 닫고 종료.
+			System.exit(0);
+		}
+	}
 	//GUI 구현 메소드
 	//GUI 구현 메소드
 	void initGUI() {
 
-		f = new JFrame("Chatting Client");
-		f.setBounds(0, 600, 500, 400);
+		f = new JFrame("Client Screen");
+		f.setBounds(0, 600, 600, 500);
 		// 클라이언트 종료.
-		f.addWindowListener(new WindowAdapter(){
-			public void windowClosing(WindowEvent e){
-				exitClient();
-				System.exit(0);
-			}			
+		f.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				// 클라 종료 메서드 호출. 인자 0은 종료.
+				doExitEvent(0);
+				;}
 		});
 
 		// main
@@ -371,7 +426,7 @@ public class ChatClient {
 		nPanelCenterLeft = new JPanel(new BorderLayout());
 		nPanelCenterRight = new JPanel(new BorderLayout());
 
-		btn1 = new JButton("접속");
+		btn1 = new JButton("Connect");
 		btn1.setActionCommand("A");
 		btn1.addActionListener(listener);
 		btn1.setFocusable(false);
@@ -385,7 +440,7 @@ public class ChatClient {
 		nPanelCenter.add(nPanelCenterLeft);
 		nPanelCenterLeft.add(new JLabel("IP : "), "West");
 		tfIP = new JTextField("1.1.1.6", 10);
-		tfIP.setActionCommand("connection");
+		tfIP.setActionCommand("A");
 		tfIP.addActionListener(listener);
 		nPanelCenterLeft.add(tfIP, "Center");
 		nPanelCenter.add(nPanelCenterRight);
@@ -393,7 +448,7 @@ public class ChatClient {
 		nPanelCenter.add(nPanelCenterRight);
 		tfPort = new JTextField("12345", 10);
 		nPanelCenterRight.add(tfPort, "Center");
-		tfPort.setActionCommand("connection");
+		tfPort.setActionCommand("A");
 		tfPort.addActionListener(listener);
 		nPanelCenter.add(nPanelCenterRight);
 		mainPanel.add(nPanel, "North");
@@ -493,8 +548,8 @@ public class ChatClient {
 		btnImgBg.setActionCommand("i");
 		btnFuntion3.setActionCommand("F3");
 		btnFuntion4.setActionCommand("F4");
-		btnServerLog.setEnabled(true);
-		btnImgBg.setEnabled(true);
+		btnServerLog.setEnabled(false);
+		btnImgBg.setEnabled(false);
 		btnFuntion3.setEnabled(false);
 		btnFuntion4.setEnabled(false);
 		cPanelEastSouth.add(cPanelEastSouthSouth, "South");

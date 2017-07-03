@@ -39,7 +39,7 @@ public class ChatServerThread implements Runnable{
 		}catch(IOException e){
 			chatServer.addLog("ChatServerThread: ServerSocket; "+e);
 		}
-		
+		chatServer.controlStopButton(true);
 		chatServer.buttonOnState();	//버튼 상태 변경
 
 		onAir = true;

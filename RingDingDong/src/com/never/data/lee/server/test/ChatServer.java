@@ -68,8 +68,7 @@ public class ChatServer {
 	//listener 'b' cmd에 따른 서버 끄기 기능 구현 메소드.
 	void stopServer(){
 		serverThread.stopServerSocket();
-		btnOn.setEnabled(true);
-		btnOff.setEnabled(false);
+		controlStopButton(false);
 	}
 
 	void addLog(String msg){
@@ -90,10 +89,17 @@ public class ChatServer {
 		return serverChat; 
 	}
 
+	// 서버가 정상적으로 소켓을 생성하면 버튼 상태를 변경한다.
+	public void controlStopButton(boolean state) {
+		btnOn.setEnabled(!state);
+		btnOff.setEnabled(state);
+		tfPort.setEnabled(!state);
+		btnFunction1.setEnabled(state);
+	}
 	private void initGUI() {
 
-		f = new JFrame("Chat Server");
-		f.setBounds(0, 0, 500, 600);
+		f = new JFrame("Server Screen");
+		f.setBounds(0, 0, 600, 600);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		mainPanel = new JPanel( new BorderLayout() );
@@ -137,6 +143,7 @@ public class ChatServer {
 		btnFunction2.addActionListener(listener);
 		btnFunction3.addActionListener(listener);
 		btnFunction4.addActionListener(listener);
+		btnFunction1.setEnabled(false);
 		btnFunction2.setEnabled(false);
 		btnFunction3.setEnabled(false);
 		btnFunction4.setEnabled(false);
