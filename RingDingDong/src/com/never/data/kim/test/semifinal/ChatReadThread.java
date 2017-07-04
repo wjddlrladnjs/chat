@@ -52,7 +52,7 @@ public class ChatReadThread extends Thread{
 					String str = dis.readUTF();
 					int length = dis.readInt();
 					bytes = new byte[length];
-					dis.read(bytes, 0, length);
+					dis.readFully(bytes, 0, length);
 					
 					chatClient.addLog("파일을 받았습니다. 배경화면으로 설정합니다.");
 					

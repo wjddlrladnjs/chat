@@ -61,11 +61,13 @@ public class ChatServerThread implements Runnable{
 	//run 메소드 종료
 	
 	////////// 이미지 전송 //////////
-	public synchronized void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
+	public void sendImageData2All(char protocol, String fileName, int fileLength, byte[] brr){
 		for(ChatCom com : chatComList){
 			com.sendImageData(protocol, fileName, fileLength, brr);
 		}
 	}
+	
+	
 	
 	
 	//메시지 전송 이벤트(본인 포함)

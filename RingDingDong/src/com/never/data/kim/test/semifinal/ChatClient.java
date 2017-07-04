@@ -62,7 +62,7 @@ public class ChatClient {
 		
 		public MyTextArea(){
 			super();
-			//setOpaque = false;
+			setOpaque(false);
 		}
 		
 		public void setBackgroundImage(Image image){
@@ -115,7 +115,7 @@ public class ChatClient {
 	//@김
 	void changeBgrImg(){
 		
-		fc = new JFileChooser(".");
+fc = new JFileChooser(".");
 		
 		FileFilter ff = new FileNameExtensionFilter("Image files", "jpg", "png");
         fc.addChoosableFileFilter(ff);
@@ -146,10 +146,6 @@ public class ChatClient {
 		
 		//서버로 보내자
 		sendImageFile(file, tlength);
-		
-		//나의 배경화면을 바꾼다
-		//setBgrImageAs(file);
-		
 	}
 	
 	void sendImageFile(File file, int tempLength){
@@ -194,7 +190,7 @@ public class ChatClient {
 			
 			System.out.println(brr.length);
 			
-			addLog(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냅니다..",
+			addLog(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냈습니다..",
 					fileName, length));
 			
 		} catch (FileNotFoundException e) {
@@ -206,10 +202,12 @@ public class ChatClient {
 	}
 	
 	void setThisImageAsBackground(byte[] bytes){
-		addLog("나 아직 안끝났어!");
+		addLog("서버에서 받은 파일로 배경화면을 설정합니다!");
 		
 		DataInputStream dis = null;
 		ImageIcon icon = new ImageIcon(bytes);
+		addLog((icon.getIconHeight() + ""));
+		addLog((icon.getIconWidth() + ""));
 		Image image = icon.getImage();
 		
 		if(image != null){

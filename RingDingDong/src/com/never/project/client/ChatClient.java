@@ -2,6 +2,7 @@ package com.never.project.client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -38,8 +40,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.never.data.jung.chat.client.ClientReadThread;
-
 
 public class ChatClient {
 	
@@ -50,7 +50,7 @@ public class ChatClient {
 	cPanelEastSouthNorth,  cPanelEastSouthCenter, cPanelEastSouthSouth,
 	sPanel;
 	private JTextField tfIP, tfPort, tfName, tfText;
-	private JTextArea taLog;
+	private JTextArea taLog1;
 	private JScrollPane spUserList, spClientLog;
 	private JButton btn1, btn2, btnNickname, btnServerLog, btnImgBg, btnFuntion3, btnFuntion4, btnNameChange;
 	private DefaultListModel<String> model;
@@ -67,7 +67,38 @@ public class ChatClient {
 	File file;
 	FileInputStream fis = null;
 	FileOutputStream fos = null;
+	
+	MyTextArea taLog;// = new MyTextArea();	//위의 JTextArea를 대신함
 
+	/////이미지 출력을 위한 커스텀 textArea
+	class MyTextArea extends JTextArea{
+		private Image backgroundImage;
+		
+		public MyTextArea(){
+			super();
+			setOpaque(false);
+		}
+		
+		public void setBackgroundImage(Image image){
+			this.backgroundImage = image;
+			this.repaint();
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			g.setColor(getBackground());
+			g.fillRect(0, 0, getWidth(), getHeight());
+			
+			if(backgroundImage != null){
+				g.drawImage(backgroundImage,  0,  0,  this);
+			}
+			
+			super.paintComponent(g);
+		}
+		
+		
+	}
+		
 	//버튼에 따른 이벤트 리스너
 	ActionListener listener = new ActionListener(){
 		@Override
@@ -158,7 +189,7 @@ public class ChatClient {
 	
 	
 	//@김
-	void changeBgrImg(){
+void changeBgrImg(){
 		
 		fc = new JFileChooser(".");
 		
@@ -191,10 +222,6 @@ public class ChatClient {
 		
 		//서버로 보내자
 		sendImageFile(file, tlength);
-		
-		//나의 배경화면을 바꾼다
-		//setBgrImageAs(file);
-		
 	}
 	
 	void sendImageFile(File file, int tempLength){
@@ -202,6 +229,7 @@ public class ChatClient {
 		int length = 0;	//파일의 크기
 		String fileName = "";
 		byte[] brr = null; //데이타가 들어갈 배열
+		
 		try {
 			fis = new FileInputStream(file);
 			addLog("파일이 인풋스트림에 들어왔습니다.");
@@ -231,8 +259,6 @@ public class ChatClient {
 			dos.writeInt(length);
 			dos.flush();
 			
-			dos.writeChar('A');
-			
 			System.out.println("ma! 이제 brr.length 간다");
 			dos.write(brr, 0, length);	//쓴다
 			System.out.println("ma! 이제 brr.length 갔다");
@@ -240,13 +266,28 @@ public class ChatClient {
 			
 			System.out.println(brr.length);
 			
-			addLog(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냅니다..",
+			addLog(String.format("서버로 파일(파일명: %s, 크기: %d)을 보냈습니다..",
 					fileName, length));
 			
 		} catch (FileNotFoundException e) {
 			addLog("파일 출력 에라: " + e);
 		} catch (IOException e) {
 			addLog("I/O 에러: " + e);
+		}
+		
+	}
+	
+	void setThisImageAsBackground(byte[] bytes){
+		addLog("서버에서 받은 파일로 배경화면을 설정합니다!");
+		
+		DataInputStream dis = null;
+		ImageIcon icon = new ImageIcon(bytes);
+		addLog((icon.getIconHeight() + ""));
+		addLog((icon.getIconWidth() + ""));
+		Image image = icon.getImage();
+		
+		if(image != null){
+			taLog.setBackgroundImage(image);
 		}
 		
 	}
@@ -525,7 +566,7 @@ public class ChatClient {
 				BorderFactory.createLineBorder(Color.BLACK),
 				"chat log", TitledBorder.LEFT,TitledBorder.CENTER)));
 
-		taLog = new JTextArea();
+		taLog = new MyTextArea();
 		taLog.setEditable(false);
 		spClientLog = new JScrollPane(taLog);
 		spClientLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

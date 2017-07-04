@@ -121,22 +121,11 @@ public class ChatCom implements Runnable{
 					byte[] bytes = null;
 					server.addLog("프로토콜 i를 받았습니다.");
 
-					//thread.startImgReceiveThread(this); //쓰레드한테 옮겨서 Comm과 별개의 I/O로 작동을 하도록!
-					//
-					//						bgrImg = new BgrImage(server, thread, this, s);
-					//						bgrImg.start(); //데이터 파일로 변환한다음 각각 클라에 쏘는거
-					//						server.addChatAlert("이미지 보내기용 쓰레드를 생성합니다.");
-					//						break;
-
-					//클라이언트에 서버소켓을 열어서 서버랑 통신할떄 io 붙으라고함
 					String str = dis.readUTF();
 					System.out.println("받기 utf : " + str);
 					int length = dis.readInt();
 					System.out.println("받기 int : " + length);
 
-
-					char ch = dis.readChar();
-					System.out.println("받기 char: " +ch);
 
 					bytes = new byte[length];
 
@@ -152,6 +141,7 @@ public class ChatCom implements Runnable{
 					//sendImageData('i', str, length, bytes);
 
 					serverThread.sendImageData2All('i', str, length, bytes);
+					server.addLog("파일을 모든 클라에 전송합니다.");
 					break;
 				}
 			} catch (IOException e) {
