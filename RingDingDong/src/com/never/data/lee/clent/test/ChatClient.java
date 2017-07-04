@@ -102,6 +102,15 @@ public class ChatClient {
 		}		
 	};
 	
+	synchronized void  serverLogDown(){ //@요한
+		try {
+			dos.writeChar('1');
+			dos.flush();
+//			dos.writeUTF(name); //네임 
+//			dos.flush();
+			
+		} catch (IOException e) {}
+	}
 	//@김
 	void changeBgrImg(){
 		
@@ -197,15 +206,6 @@ public class ChatClient {
 	}
 	
 	
-	synchronized void  serverLogDown(){ //@요한
-		try {
-			dos.writeChar('1');
-			dos.flush();
-//			dos.writeUTF(name); //네임 
-//			dos.flush();
-			
-		} catch (IOException e) {}
-	}
 	
 	
 	//client 시작. 입력오류에 따른 exception은 port에 숫자가 아닌 다른 입력이 오거나 ip와 port 중 빈 값이 있을 때만 발생한다.

@@ -1,0 +1,30 @@
+ Server is ready.... 
+Accpted IP: 192.168.205.166 
+Accepted time: 17. 7. 4 오전 9:18 
+[User] is entered this room. 
+Accpted IP: 192.168.205.166 
+Accepted time: 17. 7. 4 오전 9:18 
+[User1] is entered this room. 
+17. 7. 4 오전 9:18_User1:asd 
+17. 7. 4 오전 9:18_User1:as 
+17. 7. 4 오전 9:18_User1:das 
+17. 7. 4 오전 9:18_User1:das 
+17. 7. 4 오전 9:18_User1:das 
+17. 7. 4 오전 9:18_User1:da 
+17. 7. 4 오전 9:18_User1:sd 
+17. 7. 4 오전 9:18_User1:as 
+17. 7. 4 오전 9:18_User1:saas 
+17. 7. 4 오전 9:18_User1: 
+17. 7. 4 오전 9:18_User1:s 
+17. 7. 4 오전 9:18_User1:s 
+17. 7. 4 오전 9:18_User1:s 
+17. 7. 4 오전 9:18_User1:z 
+17. 7. 4 오전 9:18_User1:z 
+17. 7. 4 오전 9:18_User1:z 
+17. 7. 4 오전 9:18_User1:z 
+17. 7. 4 오전 9:18_User1: 
+17. 7. 4 오전 9:18_User1:a 
+17. 7. 4 오전 9:18_User1:a 
+17. 7. 4 오전 9:18_User1:q 
+17. 7. 4 오전 9:18_User:gd 
+User 님이 서버의 로그를 저장하였습니다  

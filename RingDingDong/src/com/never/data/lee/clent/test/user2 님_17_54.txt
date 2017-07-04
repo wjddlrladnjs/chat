@@ -1,0 +1,94 @@
+ 서버가 시작됨  Port : 12345 
+접속대기중 ... 
+접속완료 접속IP 192.168.205.157 
+IO객체를 얻었습니다. 
+접속대기중 ... 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : das 
+user1으로부터 받은 메시지 : das 
+user1으로부터 받은 메시지 : das 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : das 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : a 
+user1으로부터 받은 메시지 : sd 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : ds 
+user1으로부터 받은 메시지 : das 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : asd 
+user1으로부터 받은 메시지 : as 
+user1으로부터 받은 메시지 : d 
+user1으로부터 받은 메시지 : as 
+접속완료 접속IP 192.168.205.157 
+IO객체를 얻었습니다. 
+접속대기중 ... 
+user2 님님이 서버의로그를 저장하였습니다  
