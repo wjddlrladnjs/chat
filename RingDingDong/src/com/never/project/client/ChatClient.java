@@ -77,6 +77,9 @@ public class ChatClient {
 		public MyTextArea(){
 			super();
 			setOpaque(false);
+			
+			File f = new File(".", "exe.txt");
+			
 		}
 		
 		public void setBackgroundImage(Image image){
